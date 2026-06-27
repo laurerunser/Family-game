@@ -23,11 +23,11 @@ export function recordTranslation(word) {
     trans.value = trans.value + sep + w + ' = ';
     S.setTransPad(trans.value);
   }
-  // focus and place the caret at the end of that word's line
+  // refresh the reader so the word reads as "recorded" (shine off / gloss shown)
+  document.dispatchEvent(new CustomEvent('game:change'));
+  // focus and place the caret at the end of the pad so they can type the gloss
   trans.focus();
-  const idx = trans.value.search(new RegExp(w.replace(/[.*+?^${}()|[\]\\-]/g, '\\$&') + '\\s*=\\s*[^\\n]*$'));
-  const caret = idx >= 0 ? trans.value.length : trans.value.length;
-  trans.setSelectionRange(caret, caret);
+  trans.setSelectionRange(trans.value.length, trans.value.length);
   trans.scrollIntoView({ block: 'nearest' });
   trans.scrollTop = trans.scrollHeight;
 }

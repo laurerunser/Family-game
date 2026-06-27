@@ -3,7 +3,7 @@
 import { loadData, DB } from './data.js';
 import * as S from './state.js';
 import { wireSearch, searchTerm } from './search.js';
-import { openReader, renderDocList } from './reader.js';
+import { openReader, renderDocList, rerenderReader } from './reader.js';
 import { renderLexicon } from './lexicon.js';
 import { renderBoard, initViewport, attemptLock, toast } from './tree.js';
 import { setDrawMode, isDrawMode } from './edges.js';
@@ -31,6 +31,9 @@ function renderAll() {
   renderCordDock();
   renderTimer();
   document.getElementById('hints-toggle').checked = S.get().hintsOn;
+  document.getElementById('trans-toggle').checked = S.get().showTrans;
+  document.getElementById('warn-toggle').checked = S.get().warnPairs;
+  rerenderReader();
   refresh();
 }
 
@@ -57,10 +60,14 @@ function wireChrome() {
   // notes pads (free notes + translations)
   initNotes();
 
-  // extra-hints toggle (off by default)
+  // help/settings toggles (all off by default)
+  const change = () => document.dispatchEvent(new CustomEvent('game:change'));
   const hints = document.getElementById('hints-toggle');
-  hints.checked = S.get().hintsOn;
-  hints.addEventListener('change', () => { S.setHints(hints.checked); document.dispatchEvent(new CustomEvent('game:change')); });
+  hints.addEventListener('change', () => { S.setHints(hints.checked); change(); });
+  const trans = document.getElementById('trans-toggle');
+  trans.addEventListener('change', () => { S.setShowTrans(trans.checked); change(); });
+  const warn = document.getElementById('warn-toggle');
+  warn.addEventListener('change', () => { S.setWarnPairs(warn.checked); change(); });
 
   // reset
   document.getElementById('btn-reset').addEventListener('click', () => {
@@ -107,6 +114,22 @@ async function boot() {
 
   // dev hooks for automated testing only (not surfaced in the UI)
   window.__dev = {
+    // lock the current stage's tree in correct waves of four (respects the strict rule)
+    lockTreeWaves() {
+      const placeable = () => DB.people.filter((p) => p.generation != null && DB.solution.tree[p.id]
+        && p.stage_introduced <= S.get().stage && !S.isLocked(p.id));
+      for (let guard = 0; guard < 30; guard++) {
+        const rem = placeable();
+        if (!rem.length) break;
+        rem.forEach((p) => { S.setSlot(p.id, 'name', null); S.setSlot(p.id, 'title', null); });
+        rem.slice(0, 4).forEach((p) => {
+          const sol = DB.solution.tree[p.id];
+          S.setSlot(p.id, 'name', sol.given_name); S.setSlot(p.id, 'title', sol.title);
+        });
+        attemptLock();
+      }
+      document.dispatchEvent(new CustomEvent('game:change'));
+    },
     addAllEdges() {
       for (const e of DB.solution.stage3_graph) S.addEdge({ from: e.from, to: e.to, role: e.role });
       S.setFlag('reveal:factor'); S.setFlag('reveal:outloom');

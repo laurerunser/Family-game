@@ -72,6 +72,42 @@ async function cardBlob(canvas) {
   return new Promise((res) => canvas.toBlob((b) => res(b), 'image/png'));
 }
 
+// reusable share button row (no image) — used by the Phase-1 transition milestone
+export function milestoneShareHTML() {
+  return `<div class="share-row">
+    <button class="accent-btn" data-share="native">📡 Share…</button>
+    <button class="ghost-btn" data-share="twitter">𝕏 / Twitter</button>
+    <button class="ghost-btn" data-share="whatsapp">WhatsApp</button>
+    <button class="ghost-btn" data-share="facebook">Facebook</button>
+  </div>`;
+}
+
+// wire any [data-share] buttons inside `scope` to share `text` (+ optional image canvas)
+export function wireShare(scope, text, canvas) {
+  const url = shareUrl();
+  const open = (u) => window.open(u, '_blank', 'noopener');
+  scope.querySelector('[data-share="twitter"]') && (scope.querySelector('[data-share="twitter"]').onclick = () =>
+    open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`));
+  scope.querySelector('[data-share="whatsapp"]') && (scope.querySelector('[data-share="whatsapp"]').onclick = () =>
+    open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`));
+  scope.querySelector('[data-share="facebook"]') && (scope.querySelector('[data-share="facebook"]').onclick = () =>
+    open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`));
+  const nb = scope.querySelector('[data-share="native"]');
+  if (nb) {
+    nb.onclick = async () => {
+      try {
+        if (canvas && navigator.canShare) {
+          const file = new File([await cardBlob(canvas)], 'reverse-of-the-cloth.png', { type: 'image/png' });
+          if (navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text, url, title: 'The Reverse of the Cloth' }); return; }
+        }
+        if (navigator.share) await navigator.share({ text, url, title: 'The Reverse of the Cloth' });
+        else open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`);
+      } catch (e) { /* cancelled */ }
+    };
+    if (!navigator.share) nb.style.display = 'none';
+  }
+}
+
 // ---- the victory panel rendered into the finale overlay --------------------------------
 export function renderVictory(container) {
   if (!container) return;
@@ -93,28 +129,5 @@ export function renderVictory(container) {
         Elsewhere, “Save image” downloads the card to post anywhere.</p>
     </div>`;
 
-  const url = shareUrl(), text = shareText();
-  const open = (u) => window.open(u, '_blank', 'noopener');
-  container.querySelector('[data-share="twitter"]').onclick = () =>
-    open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`);
-  container.querySelector('[data-share="whatsapp"]').onclick = () =>
-    open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`);
-  container.querySelector('[data-share="facebook"]').onclick = () =>
-    open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`);
-
-  const nativeBtn = container.querySelector('[data-share="native"]');
-  nativeBtn.onclick = async () => {
-    try {
-      const blob = await cardBlob(canvas);
-      const file = new File([blob], 'reverse-of-the-cloth.png', { type: 'image/png' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], text, url, title: 'The Reverse of the Cloth' });
-      } else if (navigator.share) {
-        await navigator.share({ text, url, title: 'The Reverse of the Cloth' });
-      } else {
-        open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`);
-      }
-    } catch (e) { /* user cancelled */ }
-  };
-  if (!navigator.share) nativeBtn.style.display = 'none';
+  wireShare(container, shareText(), canvas);
 }

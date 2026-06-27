@@ -8,6 +8,35 @@ const COVERT_ROLES = ['assassin', 'spy', 'paymaster', 'funder', 'installs', 'usu
   'prime_mover', 'patsy', 'leverage_over', 'witness_for'];
 const change = () => document.dispatchEvent(new CustomEvent('game:change'));
 
+// Evidence CLUSTERS — the conspiracy locks in coherent groups, not edge-by-edge. The whole
+// payment chain snaps shut at once; the spy and the knot that holds her lock together; the
+// Factor and the prime mover behind him resolve as one. A cluster locks only when ALL of its
+// edges have been correctly drawn — a far better beat than five unrelated edges.
+export const CLUSTERS = [
+  { id: 'money', name: 'the payment chain', edges: [
+    { from: 'factor', to: 'tovesh', role: 'funder' },
+    { from: 'tovesh', to: 'caleth', role: 'paymaster' },
+    { from: 'caleth', to: 'nemora', role: 'assassin' },
+  ] },
+  { id: 'puppet', name: 'the puppet usurpation', edges: [
+    { from: 'factor', to: 'solenne', role: 'installs' },
+    { from: 'solenne', to: 'nemora', role: 'usurper' },
+  ] },
+  { id: 'held', name: 'the spy and the held knot', edges: [
+    { from: 'ilse', to: 'solenne', role: 'spy' },
+    { from: 'solenne', to: 'ilse', role: 'leverage_over' },
+  ] },
+  { id: 'source', name: 'the Factor and the prime mover', edges: [
+    { from: 'outloom', to: 'factor', role: 'prime_mover' },
+  ] },
+  { id: 'cleared', name: 'the patsy cleared and the witness', edges: [
+    { from: 'solenne', to: 'avesa', role: 'patsy' },
+    { from: 'dris', to: 'nemora', role: 'witness_for' },
+  ] },
+];
+const edgeDrawn = (e) => S.get().edges.some((h) => h.from === e.from && h.to === e.to && h.role === e.role);
+const clusterComplete = (c) => c.edges.every(edgeDrawn);
+
 let drawMode = false;
 let source = null;
 export function isDrawMode() { return drawMode; }
@@ -82,14 +111,30 @@ function submitEdge(from, to, role, cord) {
   if (to === 'factor' || from === 'factor') S.setFlag('reveal:factor');
   if (to === 'outloom' || from === 'outloom') S.setFlag('reveal:outloom');
   source = null; closePopover();
-  toast(`✦ Edge accepted: ${DB.byPerson[from].given_name} → ${DB.byPerson[to].given_name} (${role.replace('_', ' ')}).`);
+
+  // did this edge just complete (lock) an evidence cluster?
+  const cluster = CLUSTERS.find((c) => c.edges.some((e) => e.from === from && e.to === to && e.role === role) && clusterComplete(c));
+  if (cluster && !S.flag('cluster:' + cluster.id)) {
+    S.setFlag('cluster:' + cluster.id);
+    toast(`⟡ LOCKED — ${cluster.name} snaps into place (${cluster.edges.length} ${cluster.edges.length > 1 ? 'threads' : 'thread'}).`, 4200);
+  } else {
+    const rem = CLUSTERS.find((c) => c.edges.some((e) => e.from === from && e.to === to && e.role === role));
+    const got = rem ? rem.edges.filter(edgeDrawn).length : 0;
+    toast(`Thread traced — ${DB.byPerson[from].given_name} → ${DB.byPerson[to].given_name}. ${rem ? `${got}/${rem.edges.length} of ${rem.name} found.` : ''}`);
+  }
   change();
 }
 
-// how many of the solution's covert edges has the player correctly drawn?
+// progress, counted by completed CLUSTERS (the unit the conspiracy locks in). Computed from
+// the drawn edges (the per-cluster "locked" flag only drives the one-time celebratory beat).
+export function clusterProgress() {
+  const done = CLUSTERS.filter(clusterComplete).length;
+  return { done, total: CLUSTERS.length };
+}
+// retained for the right-column edge count; clusters are the lock unit
 export function graphProgress() {
-  const need = DB.solution.stage3_graph;
   const have = S.get().edges;
+  const need = DB.solution.stage3_graph;
   const done = need.filter((n) => have.some((h) => h.from === n.from && h.to === n.to && h.role === n.role));
   return { done: done.length, total: need.length };
 }

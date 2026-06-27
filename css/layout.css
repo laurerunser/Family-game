@@ -87,10 +87,16 @@
   border: 1px solid var(--line);
 }
 .reader .r-body .term {
-  color: var(--green); text-shadow: var(--glow-g); cursor: pointer;
-  border-bottom: 1px dotted rgba(84,255,176,0.5);
+  color: var(--green); cursor: pointer; border-bottom: 1px dotted rgba(84,255,176,0.5);
 }
-.reader .r-body .term:hover { color: var(--orange-bright); text-shadow: var(--glow-o); }
+.reader .r-body .term.untranslated { text-shadow: 0 0 6px rgba(84,255,176,0.5); animation: termshine 2.8s ease-in-out infinite; }
+@keyframes termshine {
+  0%, 100% { filter: brightness(1); text-shadow: 0 0 5px rgba(84,255,176,0.45); }
+  50% { filter: brightness(1.32); text-shadow: 0 0 13px rgba(84,255,176,0.95); }
+}
+.reader .r-body .term.translated { color: #8fbfa6; text-shadow: none; border-bottom-color: rgba(143,191,166,0.4); }
+.reader .r-body .term:hover { color: var(--orange-bright); text-shadow: var(--glow-o); animation: none; }
+.reader .r-body .gloss-inline { color: var(--ink-dim); font-style: italic; opacity: 0.72; font-size: 0.82em; margin: 0 2px; }
 .reader .note { color: var(--ink-dim); font-style: italic; }
 
 .invert-btn { margin: 10px 0; width: 100%; }
@@ -153,7 +159,12 @@
   height: 64px; border-radius: 6px; margin-bottom: 6px;
   background: radial-gradient(circle at 50% 35%, rgba(79,214,255,0.30), rgba(123,63,228,0.10) 70%);
   border: 1px solid var(--line); display: grid; place-items: center; position: relative; overflow: hidden;
+  /* unrevealed characters are greyscale; they snap to full colour once locked/revealed.
+     Works the same on the final colour art — no second B&W asset needed. */
+  filter: grayscale(1) brightness(0.78) contrast(0.95);
+  transition: filter 0.7s ease;
 }
+.node.locked .portrait, .node.revealed .portrait { filter: none; }
 .node .portrait svg { width: 46px; height: 46px; opacity: 0.85; }
 .node .portrait::after { /* hologram sheen */
   content: ""; position: absolute; inset: 0;
@@ -194,9 +205,14 @@
 .timer-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; color: var(--ink-dim); }
 .timer-val { font-family: var(--crt); font-size: 22px; color: var(--blue); text-shadow: var(--glow-b); }
 .timer-val.won { color: var(--green); text-shadow: var(--glow-g); }
-.hint-toggle { display: flex; align-items: flex-start; gap: 8px; margin-top: 12px; cursor: pointer;
-  font-family: var(--mono); font-size: 11.5px; color: var(--ink); padding-top: 10px; border-top: 1px solid var(--line); }
-.hint-toggle input { accent-color: var(--orange); margin-top: 1px; }
+.settings { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 7px; }
+.hint-toggle { display: flex; align-items: flex-start; gap: 8px; cursor: pointer;
+  font-family: var(--mono); font-size: 11.5px; color: var(--ink); }
+.hint-toggle input { accent-color: var(--orange); margin-top: 1px; flex: none; }
+.pair-warning {
+  margin: 10px 0 0; padding: 8px 10px; font-family: var(--mono); font-size: 11.5px; line-height: 1.5;
+  color: var(--gold); border: 1px solid var(--gold); border-radius: 6px; background: rgba(255,213,107,0.06);
+}
 .phase-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.3em; color: var(--ink-dim); }
 .phase-num { font-family: var(--display); font-size: 30px; font-weight: 700; color: var(--orange-bright); text-shadow: var(--glow-o); }
 .phase-num .of { font-size: 16px; color: var(--ink-dim); }

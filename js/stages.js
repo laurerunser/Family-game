@@ -2,10 +2,12 @@
 // (the Turn, the cords hand-over, the frame reversal, and the finale).
 import { DB } from './data.js';
 import * as S from './state.js';
-import { renderBoard, toast } from './tree.js';
-import { setDrawMode, graphProgress } from './edges.js';
+import { renderBoard, toast, pairingStatus } from './tree.js';
+import { setDrawMode, graphProgress, clusterProgress } from './edges.js';
 import { showOverlay, hideOverlay } from './ui.js';
 import { showFinale } from './finale.js';
+import { formatMs } from './timer.js';
+import { milestoneShareHTML, wireShare } from './wincard.js';
 
 const PHASE_NAME = {
   1: 'THE FRONT · read the Weave',
@@ -40,18 +42,19 @@ function objectives() {
       ['Restore her name from the reverse (read “The Reverse of the Ward’s Vael”)', S.isRead('r1')],
       ['Prove the venn-vau (Talis) and the true firstborn (read r2, r3)', S.isRead('r2') && S.isRead('r3')],
       [`Read all the reverses (${rr}/7)`, rr >= 7],
-      ['Re-judge the standing warp — place every figure (' + locked + '/' + s2.length + ')', locked === s2.length],
+      [`Re-judge the warp — lock every figure, four at a time (${locked}/${s2.length})`, locked === s2.length],
       ['Take both keys (read “The Name the Vael Denied”)', S.isRead('r7')],
     ];
   }
   const gp = graphProgress();
+  const cp = clusterProgress();
   const cordsDone = letteredCords().filter((d) => S.isDecoded(d.id)).length;
   return [
     [`Decode the Counter’s cords (${cordsDone}/${letteredCords().length})`, cordsDone >= letteredCords().length - 1],
     ['Catch the false-karn (clear Avesa)', S.flag('forgeryCaught')],
     ['Assemble the second key and name the Outloom (decode c8)', S.isDecoded('c8')],
     ['Reread the Charge — see whose seal commissioned you', S.flag('frameReread')],
-    [`Draw the conspiracy (${gp.done}/${gp.total} edges)`, gp.done === gp.total],
+    [`Lock the conspiracy, cluster by cluster (${cp.done}/${cp.total}) — ${gp.done}/${gp.total} threads`, cp.done === cp.total],
   ];
 }
 
@@ -59,7 +62,7 @@ function objectives() {
 function progressFraction() {
   const st = S.get();
   const s1 = placeableUpTo(1), s2 = placeableUpTo(2);
-  const gp = graphProgress();
+  const cp = clusterProgress();
   const parts = [
     frac(s1.filter((p) => S.isLocked(p.id)).length, s1.length),
     st.flags.rosettaSeen ? 1 : 0,
@@ -68,7 +71,7 @@ function progressFraction() {
     frac(letteredCords().filter((d) => S.isDecoded(d.id)).length, letteredCords().length),
     st.flags.forgeryCaught ? 1 : 0,
     st.flags.frameReread ? 1 : 0,
-    frac(gp.done, gp.total),
+    frac(cp.done, cp.total),
     st.flags.finaleDone ? 1 : 0,
   ];
   return parts.reduce((a, b) => a + b, 0) / parts.length;
@@ -81,7 +84,7 @@ function checkGates() {
 
   // Stage 1 -> 2: the front is placed, the hook is read, the cloth has turned.
   if (st.stage === 1 && allLocked(placeableUpTo(1)) && S.isRead('d4') && S.flag('rosettaSeen') && !S.flag('turned')) {
-    S.setFlag('turned'); S.setStage(2);
+    S.setFlag('turned'); S.setFlag('stage1Ms', st.playMs); S.setStage(2);
     S.discover(['venn', 'venn_vau', 'veresh', 'mis_shorn', 'threa_kept']);
     turnTransition();
     return;
@@ -100,9 +103,9 @@ function checkGates() {
     frameReversal();
     return;
   }
-  // Stage 3: graph complete + forgery caught + frame seen -> finale.
-  const gp = graphProgress();
-  if (st.stage === 3 && gp.done === gp.total && S.flag('forgeryCaught') && S.flag('frameReread') && !S.flag('finaleDone')) {
+  // Stage 3: every evidence cluster locked + forgery caught + frame seen -> finale.
+  const cp = clusterProgress();
+  if (st.stage === 3 && cp.done === cp.total && S.flag('forgeryCaught') && S.flag('frameReread') && !S.flag('finaleDone')) {
     S.setFlag('show:c_final', true);
     showFinale();
   }
@@ -110,15 +113,26 @@ function checkGates() {
 
 // ---- transition beats -------------------------------------------------------------------
 function turnTransition() {
-  showOverlay(`<span class="kicker">PHASE 1 → 2 · THE TURN</span>
-    <h2>The thread runs off the edge — and does not end.</h2>
-    <p>You followed the ward’s unterminated strand off the selvage of the record and inverted the
-    signal. On the underside, in the tied-off threads, a hand has been speaking all along — from the
-    <b>venn</b>, the reverse. The marked strands spell a name you already know: <b class="glow-g">SUVI</b>.</p>
-    <p>The front was the medium of the lie. The reverse is where the silenced weaver hid the truth,
-    against the day a reader would turn the cloth. Read her reverses now. Search the Old Tongue she
-    teaches — begin with <b>venn</b>.</p>
-    <div class="actions"><button class="accent-btn" id="ov-go">ENTER THE REVERSE</button></div>`);
+  const t = formatMs(S.get().flags.stage1Ms || S.get().playMs);
+  showOverlay(`<span class="kicker">PHASE 1 COMPLETE · THE TURN</span>
+    <h2>You read the front — in ${t}.</h2>
+    <p>You placed every figure on the standing warp, followed the ward’s unterminated strand off the
+    edge of the record, and inverted the signal. On the underside, in the tied-off threads, a hand has
+    been speaking all along — from the <b>venn</b>, the reverse. The marked strands spell a name you
+    already know: <b class="glow-g">SUVI</b>. <b>Phase 1 cleared in ${t}.</b> Share it, and dare a friend:</p>
+    ${milestoneShareHTML()}
+    <hr style="border-color:var(--line);margin:18px 0" />
+    <h2 style="font-size:20px">The world is bigger than the front admits.</h2>
+    <p>The reverse overturns what the front told you — and names two people it hid: <b>Talis</b>, the
+    secret husband, and <b>Dris</b>, the secret lover. Place them the way you placed the rest — in
+    <b class="glow-o">clusters of four</b> (here, the final pair): give a name <i>and</i> a title, have
+    <i>all</i> of them right, and don’t over-name. A wrong one, or one too many, and <b>nothing</b> locks
+    until you pare back to the ones you’re sure of.</p>
+    <p class="hint">Tip: turn on <b>“Warn me when I’ve named too many”</b> in the right column for a
+    heads-up when more figures are fully named than will lock at once. (All help toggles are off by default.)</p>
+    <div class="actions"><button class="accent-btn" id="ov-go">KEEP DIVING — ENTER THE REVERSE</button></div>`);
+  wireShare(document.getElementById('overlay-card'),
+    `I read the front of the fallen Loomhouse of Oramei and reached the hidden reverse in ${t}. Can you?`);
   document.getElementById('ov-go').addEventListener('click', () => {
     hideOverlay();
     S.discover(['venn']);
@@ -172,6 +186,17 @@ export function refresh() {
 
   const ul = document.getElementById('objectives');
   ul.innerHTML = objectives().map(([t, done]) => `<li class="${done ? 'done' : ''}">${t}</li>`).join('');
+
+  // "named too many" warning (Phase 2+, opt-in)
+  const warnEl = document.getElementById('pair-warning');
+  const ps = pairingStatus();
+  if (S.get().warnPairs && ps.strict && ps.paired.length > ps.required) {
+    warnEl.hidden = false;
+    warnEl.innerHTML = `⚠ You have <b>${ps.paired.length}</b> figures fully named, but only <b>${ps.required}</b> lock at a time —
+      nothing will lock until you pare back to ${ps.required} you’re sure of.`;
+  } else {
+    warnEl.hidden = true;
+  }
 
   // Stage-3: swap the LOCK button for a DRAW toggle
   const lockBtn = document.getElementById('btn-lock');

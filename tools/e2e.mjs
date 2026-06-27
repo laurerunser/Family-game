@@ -40,9 +40,10 @@ async function lockLoop(max) {
     await page.waitForTimeout(40);
   }
 }
-// lock in batches until all stage-1 placed nodes are locked
-await lockLoop(25);
-ok(await get(() => Object.keys(JSON.parse(localStorage.getItem('reverse-of-the-cloth.v1')).locked).length) >= 14, 'stage-1 nodes locked');
+// lock the tree (Phase 1 = gentle cadence)
+await get(() => window.__dev.lockTreeWaves());
+await page.waitForTimeout(260); // let the save debounce flush
+ok(await get(() => Object.keys(JSON.parse(localStorage.getItem('reverse-of-the-cloth.v1')).locked).length) >= 14, 'stage-1 figures locked');
 // invert the rosetta
 await get(() => window.__game.openReader('turn_rosetta'));
 await page.click('[data-invert]');
@@ -59,8 +60,7 @@ for (const r of ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7']) {
   await page.locator('#reader [data-invert]').click({ timeout: 5000 }); // reveal the hidden payload too
   await page.waitForTimeout(20);
 }
-await get(() => window.__solveTree());
-await lockLoop(14);
+await get(() => window.__dev.lockTreeWaves());
 await page.waitForTimeout(300);
 ok(await overlayVisible(), 'Stage 2→3 cords overlay appeared');
 await clickOverlayBtn('ov-go');

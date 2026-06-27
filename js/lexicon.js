@@ -2,6 +2,17 @@
 import { DB } from './data.js';
 import * as S from './state.js';
 
+// Parse the player's translation pad into a map: lowercased word -> their gloss text.
+// A word "appears" in the pad once recorded (any line "word = ...", gloss may be empty).
+export function parseTranslations() {
+  const map = new Map();
+  for (const line of (S.get().transPad || '').split('\n')) {
+    const m = line.match(/^\s*(.+?)\s*=\s*(.*)$/);
+    if (m) map.set(m[1].trim().toLowerCase(), m[2].trim());
+  }
+  return map;
+}
+
 let termRegex = null;
 function buildRegex() {
   // non-affix threnne forms, longest first so compounds win (suri-shen before suri)
@@ -14,16 +25,25 @@ function buildRegex() {
 }
 
 // Wrap every threnne occurrence in a clickable span. Returns HTML (input is plain text).
+// Untranslated words (not yet recorded in the translation pad) get a subtle shine; recorded
+// words are muted, and — when "show my translations" is on — show the player's gloss faintly.
 export function highlightBody(text) {
   if (!termRegex) buildRegex();
   const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  // render transcriber-note brackets dimmer
+  const trans = parseTranslations();
+  const showTrans = S.get().showTrans;
   let html = esc(text);
   html = html.replace(termRegex, (m) => {
     const entry = DB.lexicon.find((t) => t.threnne.toLowerCase() === m.toLowerCase());
     const tid = entry ? entry.term_id : '';
     const gloss = entry ? entry.english.replace(/"/g, '&quot;') : '';
-    return `<span class="term" data-term="${tid}" title="${gloss}">${m}</span>`;
+    const recorded = trans.has(m.toLowerCase());
+    const cls = recorded ? 'term translated' : 'term untranslated';
+    let out = `<span class="${cls}" data-term="${tid}" title="${gloss}">${m}</span>`;
+    if (showTrans && recorded && trans.get(m.toLowerCase())) {
+      out += `<span class="gloss-inline">(${esc(trans.get(m.toLowerCase()))})</span>`;
+    }
+    return out;
   });
   // dim bracketed archivist notes
   html = html.replace(/(\[[^\]]*\])/g, '<span class="note">$1</span>');

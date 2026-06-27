@@ -97,10 +97,21 @@
             <span id="progress-pct" class="progress-pct">0%</span>
           </div>
           <ul id="objectives" class="objectives"></ul>
-          <label class="hint-toggle" title="Show, per record, how many undiscovered records you can reach from its words">
-            <input type="checkbox" id="hints-toggle" />
-            <span>Extra hints <span class="hint">— reachable records (off by default)</span></span>
-          </label>
+          <p id="pair-warning" class="pair-warning" hidden></p>
+          <div class="settings">
+            <label class="hint-toggle" title="Show, per record, how many undiscovered records you can reach from its words">
+              <input type="checkbox" id="hints-toggle" />
+              <span>Extra hints <span class="hint">— reachable records</span></span>
+            </label>
+            <label class="hint-toggle" title="Show the translations you recorded, faintly, over the words you recorded them for">
+              <input type="checkbox" id="trans-toggle" />
+              <span>Show my translations <span class="hint">— over recorded words</span></span>
+            </label>
+            <label class="hint-toggle" title="In Phase 2+, warn when you have more fully-named figures than will lock at once">
+              <input type="checkbox" id="warn-toggle" />
+              <span>Warn me when I’ve named too many <span class="hint">— Phase 2+</span></span>
+            </label>
+          </div>
         </div>
 
         <div class="pads">

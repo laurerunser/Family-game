@@ -19,6 +19,8 @@ const DEFAULT = () => ({
   wonAt: null,              // timestamp of victory
   hintsOn: false,           // "extra hints" setting (off by default)
   usedHints: false,         // sticky: did the player ever enable hints?
+  showTrans: false,         // "show my translations" overlay (off by default)
+  warnPairs: false,         // "warn me when I've paired too many" (off by default)
 });
 
 let state = load();
@@ -108,3 +110,5 @@ export function setHints(on) {
   if (on) state.usedHints = true;
   save();
 }
+export function setShowTrans(on) { state.showTrans = !!on; save(); }
+export function setWarnPairs(on) { state.warnPairs = !!on; save(); }

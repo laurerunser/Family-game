@@ -85,6 +85,7 @@ function buildNode(id) {
   if (offtree) {
     // off-tree powers: identity is revealed by the cords; show name once discovered
     const known = S.flag('reveal:' + id);
+    if (known) el.classList.add('revealed');
     inner += `<div class="slot-static">${known ? p.given_name : '— unknown —'}</div>`;
     inner += `<div class="nid">${known ? p.title_english : 'outside the house'}</div>`;
   } else if (locked) {
@@ -160,30 +161,46 @@ export function renderBoard() {
   drawEdges();
 }
 
+// ---- pairing status (used by the lock logic and the "too many" warning) -----------------
+function placeableUpTo(stage) {
+  return DB.people.filter((p) => p.generation != null && DB.solution.tree[p.id] && p.stage_introduced <= stage);
+}
+export function pairingStatus() {
+  const st = S.get();
+  const pool = placeableUpTo(st.stage);
+  const remaining = pool.filter((p) => !S.isLocked(p.id));
+  const paired = remaining.filter((p) => { const s = st.slots[p.id] || {}; return s.name && s.title; });
+  // Phase 1 stays gentle — the growing cadence (1, 2, 3, 3…). Phase 2 is strict: name + title
+  // exactly four figures, all four correct, before any lock; over-naming a fifth blocks
+  // everything; fewer than four only for the final remainder (the two hidden figures).
+  const required = st.stage >= 2 ? Math.min(4, remaining.length) : [1, 2, 3][Math.min(st.lockBatches, 2)];
+  return { remaining, paired, required, strict: st.stage >= 2 };
+}
+
 // ---- batch-locked validation ------------------------------------------------------------
 export function attemptLock() {
   const st = S.get();
-  const required = [1, 2, 3][Math.min(st.lockBatches, 2)];
-  const batch = placeable().filter((p) => {
-    if (S.isLocked(p.id)) return false;
-    const s = st.slots[p.id] || {};
-    return s.name && s.title;
-  });
-  if (batch.length < required) {
-    toast(`Select and fill at least ${required} unlocked node${required > 1 ? 's' : ''} before locking.`);
+  const { paired, required, strict } = pairingStatus();
+
+  if (strict && paired.length > required) {
+    toast(`Too many named: only ${required} lock at a time, and only if they stand alone. Unpair down to ${required} you’re sure of.`);
     return;
   }
-  const wrong = batch.filter((p) => {
+  if (paired.length < required) {
+    toast(`Give a name AND a title to ${required} figure${required > 1 ? 's' : ''} before locking — you have ${paired.length}.`);
+    return;
+  }
+  const wrong = paired.filter((p) => {
     const s = st.slots[p.id], sol = DB.solution.tree[p.id];
     return !(s.name === sol.given_name && s.title === sol.title);
   });
   if (wrong.length) {
-    toast(`${batch.length - wrong.length} of ${batch.length} correct — none locked. Refine and try again.`);
+    toast(`${paired.length - wrong.length} of ${paired.length} correct — none locked. Refine and try again.`);
     return;
   }
-  batch.forEach((p) => S.lock(p.id));
+  paired.forEach((p) => S.lock(p.id));
   st.lockBatches++; S.save();
-  toast(`✦ Locked ${batch.length} name${batch.length > 1 ? 's' : ''} into the Weave.`);
+  toast(`✦ Locked ${paired.length} ${paired.length > 1 ? 'names' : 'name'} into the Weave.`);
   change();
 }
 

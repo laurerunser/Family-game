@@ -145,7 +145,10 @@ const documents = src.documents.map((d) => {
 // --- solution.json -----------------------------------------------------------------------
 const solution = JSON.parse(JSON.stringify(src.solution));
 const tree = {};
-for (const p of people) tree[p.id] = { given_name: p.given_name, title: p.title_english };
+for (const p of people) {
+  if (p.noise) continue; // search-noise commoners are never placed or validated on the board
+  tree[p.id] = { given_name: p.given_name, title: p.title_english };
+}
 solution.tree = tree;
 
 // --- write all five ----------------------------------------------------------------------

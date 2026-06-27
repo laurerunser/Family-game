@@ -12,6 +12,9 @@ let inverted = false;
 
 export function activeDocId() { return activeDoc; }
 
+// Re-render the open document (used when translations / show-translations change).
+export function rerenderReader() { if (activeDoc) render(); }
+
 export function openReader(id) {
   const d = DB.byDoc[id];
   if (!d) return;
