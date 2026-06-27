@@ -1,0 +1,17 @@
+{
+  "name": "signal-weave",
+  "version": "1.0.0",
+  "description": "The Reverse of the Cloth — sci-fi 'Signal-Weave' reskin. Static narrative-deduction game.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "generate": "node tools/generate-content.js",
+    "verify": "node tools/verify-solvability.js",
+    "build": "node tools/generate-content.js && node tools/verify-solvability.js",
+    "serve": "python3 -m http.server 8000",
+    "e2e": "node tools/e2e.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.61.1"
+  }
+}

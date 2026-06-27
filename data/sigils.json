@@ -1,0 +1,82 @@
+[
+  {
+    "id": "tovesh_sigil",
+    "owner_person_id": "tovesh",
+    "tier": "palace",
+    "pattern": [
+      3,
+      1,
+      4
+    ],
+    "forged": false
+  },
+  {
+    "id": "solenne_sigil",
+    "owner_person_id": "solenne",
+    "tier": "palace",
+    "pattern": [
+      2,
+      4,
+      2
+    ],
+    "forged": false
+  },
+  {
+    "id": "caleth_sigil",
+    "owner_person_id": "caleth",
+    "tier": "palace",
+    "pattern": [
+      1,
+      5,
+      2
+    ],
+    "forged": false
+  },
+  {
+    "id": "ilse_sigil",
+    "owner_person_id": "ilse",
+    "tier": "palace",
+    "pattern": [
+      4,
+      1,
+      3
+    ],
+    "forged": false
+  },
+  {
+    "id": "avesa_sigil",
+    "owner_person_id": "avesa",
+    "tier": "palace",
+    "pattern": [
+      2,
+      4,
+      1
+    ],
+    "forged": false,
+    "note": "Differs from solenne_sigil [2,4,2] by a single knot. This near-match is exploited by the forged cord c7 to frame Avesa."
+  },
+  {
+    "id": "factor_sigil",
+    "owner_person_id": "factor",
+    "tier": "outside",
+    "pattern": [
+      7,
+      3,
+      7
+    ],
+    "forged": false,
+    "note": "Unknown at the palace tier (not in the house sigil-key c3). Marks the funding (c4) and the instruction (c6) as coming from outside."
+  },
+  {
+    "id": "outloom_sigil",
+    "owner_person_id": "outloom",
+    "tier": "outside",
+    "pattern": [
+      5,
+      2,
+      5
+    ],
+    "forged": false,
+    "note": "The Outloom heir-nael. Equals the border-nael on document d1 — the frame reversal."
+  }
+]

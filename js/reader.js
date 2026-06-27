@@ -1,0 +1,105 @@
+// reader.js — the document reader: prose, term highlighting, and the "invert the signal"
+// reverse-channel toggle with its steganography grid.
+import { DB } from './data.js';
+import * as S from './state.js';
+import { highlightBody } from './lexicon.js';
+
+const change = () => document.dispatchEvent(new CustomEvent('game:change'));
+let activeDoc = null;
+let inverted = false;
+
+export function activeDocId() { return activeDoc; }
+
+export function openReader(id) {
+  const d = DB.byDoc[id];
+  if (!d) return;
+  activeDoc = id;
+  inverted = false;
+  S.openDoc(id);
+  S.markRead(id);
+  S.discover(d.searchable_terms || []);
+  // reverses also plant their hidden-payload words into play once read in Stage 2+
+  render();
+  change();
+}
+
+function render() {
+  const d = DB.byDoc[activeDoc];
+  const reader = document.getElementById('reader');
+  reader.hidden = false;
+  const typeClass = d.type;
+  let html = `<div class="r-head">
+      <h2>${d.title}</h2>
+      <span class="r-meta"><span class="badge ${typeClass}">${d.type}</span><br>turning ${d.date}</span>
+    </div>`;
+
+  if (d.hidden_payload && inverted) {
+    html += `<button class="ghost-btn invert-btn on" data-invert>◐ SIGNAL INVERTED — show front</button>`;
+    html += stegoHTML(d.hidden_payload);
+  } else {
+    html += `<div class="r-body">${highlightBody(d.body)}</div>`;
+    if (d.hidden_payload) {
+      html += `<button class="ghost-btn invert-btn" data-invert>◑ INVERT THE SIGNAL — read the reverse</button>`;
+    }
+  }
+  reader.innerHTML = html;
+
+  reader.querySelectorAll('.term').forEach((el) => {
+    el.addEventListener('click', () => {
+      const tid = el.dataset.term;
+      if (tid) { S.discover([tid]); window.__game?.searchTerm?.(tid); change(); }
+    });
+  });
+  const invertBtn = reader.querySelector('[data-invert]');
+  if (invertBtn) invertBtn.addEventListener('click', () => {
+    inverted = !inverted;
+    if (inverted && d.hidden_payload) {
+      S.discover(d.searchable_terms || []);
+      if (d.is_turn_rosetta) S.setFlag('rosettaSeen');
+      S.setFlag('inverted:' + d.id);
+    }
+    render();
+    change();
+  });
+
+  // reflect active state in the doc list
+  document.querySelectorAll('#doc-list li').forEach((li) =>
+    li.classList.toggle('active', li.dataset.id === activeDoc));
+}
+
+function stegoHTML(payload) {
+  const { cells, marked_indices, grid_w, text } = payload;
+  const markedSet = new Set(marked_indices);
+  let grid = `<div class="stego" style="grid-template-columns: repeat(${grid_w}, 1fr)">`;
+  cells.forEach((c, i) => {
+    grid += `<div class="cell${markedSet.has(i) ? ' marked' : ''}">${c}</div>`;
+  });
+  grid += `</div>`;
+  const reading = marked_indices.map((i) => cells[i]).join('');
+  grid += `<p class="hint">Most strands are carried (noise); the tied-off strands glow. Read them in order:</p>`;
+  grid += `<div class="stego-read">${reading}</div>`;
+  return grid;
+}
+
+// Render the left-column document list (everything the player has opened / can open).
+export function renderDocList() {
+  const st = S.get();
+  const ul = document.getElementById('doc-list');
+  // a doc is listed if opened, is_start, or (for its stage) already unlocked via search index
+  const visible = DB.documents.filter((d) => {
+    if (d.is_finale || d.is_frame_reversal) return st.flags['show:' + d.id];
+    return S.isOpen(d.id) || (d.is_start && d.stage <= st.stage);
+  });
+  visible.sort((a, b) => a.stage - b.stage || a.date - b.date);
+  ul.innerHTML = '';
+  for (const d of visible) {
+    const li = document.createElement('li');
+    li.dataset.id = d.id;
+    if (S.isRead(d.id)) li.classList.add('read');
+    if (d.id === activeDoc) li.classList.add('active');
+    li.innerHTML = `<span class="badge ${d.type}">${d.type[0].toUpperCase()}</span>` +
+      `<span class="dtitle">${d.title}</span><span class="ddate">T${d.date}</span>`;
+    li.addEventListener('click', () => openReader(d.id));
+    ul.appendChild(li);
+  }
+}

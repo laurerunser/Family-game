@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>The Reverse of the Cloth — Signal-Weave</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13'>%E2%9F%81</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/theme.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+</head>
+<body>
+  <div class="crt">
+    <!-- ===================== TOP BAR ===================== -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="glyph">⟁</span>
+        <div class="brand-text">
+          <h1>THE REVERSE OF THE CLOTH</h1>
+          <p class="sub">Signal-Weave Archive · Loomhouse of Oramei</p>
+        </div>
+      </div>
+      <div class="search-wrap">
+        <input id="search-input" type="text" autocomplete="off" spellcheck="false"
+               placeholder="search a known word of the Old Tongue…" />
+        <div id="search-results" class="search-results" hidden></div>
+      </div>
+      <button id="btn-reset" class="ghost-btn" title="Wipe local progress">RESET</button>
+    </header>
+
+    <!-- ===================== MAIN 3-COLUMN ===================== -->
+    <main class="columns">
+      <!-- LEFT: documents + lexicon -->
+      <section class="col col-left" aria-label="Records and lexicon">
+        <div class="tabs">
+          <button class="tab active" data-tab="records">RECORDS</button>
+          <button class="tab" data-tab="lexicon">LEXICON</button>
+        </div>
+        <div class="tab-body">
+          <div id="tab-records" class="tabpane active">
+            <ul id="doc-list" class="doc-list"></ul>
+            <article id="reader" class="reader" hidden></article>
+          </div>
+          <div id="tab-lexicon" class="tabpane">
+            <p class="hint">Words discovered in the records. Hover for the gloss.</p>
+            <ul id="lexicon-list" class="lexicon-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- MIDDLE: the family tree / board -->
+      <section class="col col-mid" aria-label="The family tree">
+        <div class="mid-head">
+          <span id="board-title">THE STANDING WARP</span>
+          <div class="mid-tools">
+            <button id="btn-zoom-out" class="ghost-btn sq" title="Zoom out">−</button>
+            <button id="btn-zoom-in" class="ghost-btn sq" title="Zoom in">+</button>
+            <button id="btn-zoom-reset" class="ghost-btn" title="Reset view">⟲ FIT</button>
+            <button id="btn-lock" class="accent-btn">LOCK ANSWERS</button>
+          </div>
+        </div>
+        <div id="viewport" class="viewport">
+          <div id="board" class="board">
+            <svg id="edges-svg" class="edges-svg"></svg>
+            <div id="nodes" class="nodes"></div>
+          </div>
+          <div id="board-toast" class="board-toast" hidden></div>
+        </div>
+      </section>
+
+      <!-- RIGHT: status column -->
+      <section class="col col-right" aria-label="Status and notes">
+        <div class="status-block">
+          <div class="phase-line">
+            <span class="phase-label">PHASE</span>
+            <span id="phase-num" class="phase-num">1<span class="of">/3</span></span>
+          </div>
+          <div id="phase-name" class="phase-name">THE FRONT · read the Weave</div>
+          <div class="progress">
+            <div class="progress-track"><div id="progress-fill" class="progress-fill"></div></div>
+            <span id="progress-pct" class="progress-pct">0%</span>
+          </div>
+          <ul id="objectives" class="objectives"></ul>
+        </div>
+        <div class="scratch-block">
+          <label for="scratchpad" class="scratch-label">SCRATCH-CORD <span class="hint">(your notes, saved locally)</span></label>
+          <textarea id="scratchpad" spellcheck="false"
+                    placeholder="Knot your own notes here…&#10;e.g. d4: ward's thread runs off the edge — does not end?"></textarea>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===================== OVERLAY (transitions, cords, finale) ===================== -->
+    <div id="overlay" class="overlay" hidden>
+      <div class="overlay-card" id="overlay-card"></div>
+    </div>
+
+    <!-- ===================== CORD WORKSPACE (Stage 3 panel) ===================== -->
+    <div id="cord-dock" class="cord-dock" hidden></div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

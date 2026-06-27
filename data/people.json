@@ -1,0 +1,354 @@
+[
+  {
+    "id": "vethra",
+    "given_name": "Vethra",
+    "title_english": "the First Warp",
+    "generation": 1,
+    "sigil_id": null,
+    "stage_introduced": 1,
+    "edges": [
+      {
+        "to": "orel",
+        "type": "spouse",
+        "stage": 1,
+        "hidden": false
+      },
+      {
+        "to": "marenn",
+        "type": "parent_of",
+        "stage": 1,
+        "hidden": false
+      },
+      {
+        "to": "suvi",
+        "type": "parent_of",
+        "stage": 1,
+        "hidden": false
+      },
+      {
+        "to": "eddan",
+        "type": "parent_of",
+        "stage": 1,
+        "hidden": false
+      }
+    ]
+  },
+  {
+    "id": "orel",
+    "given_name": "Orel",
+    "title_english": "the Loomfoot",
+    "generation": 1,
+    "sigil_id": null,
+    "stage_introduced": 1,
+    "edges": []
+  },
+  {
+    "id": "marenn",
+    "given_name": "Marenn",
+    "title_english": "the Standing Warp",
+    "generation": 2,
+    "sigil_id": null,
+    "stage_introduced": 1,
+    "note": "Front records her as Vethra's ELDEST and 2nd Vara. Reverse (R3): truly the second-born; her line holds the senior warp by usurping Suvi's primacy.",
+    "edges": [
+      {
+        "to": "hadon",
+        "type": "spouse",
+        "stage": 1,
+        "hidden": false
+      },
+      {
+        "to": "edra",
+        "type": "parent_of",
+        "stage": 1,
+        "hidden": false
+      },
+      {
+        "to": "solenne",
+        "type": "parent_of",
+        "stage": 1,
+        "hidden": false
+      },
+      {
+        "to": "renor",
+        "type": "parent_of",
+        "stage": 1,
+        "hidden": false
+      }
+    ]
+  },
+  {
+    "id": "suvi",
+    "given_name": "Suvi",
+    "title_english": "the Silent Relay",
+    "generation": 2,
+    "sigil_id": null,
+    "stage_introduced": 1,
+    "note": "Front: Vethra's second daughter, who 'wove but did not rule'. Reverse: Vethra's TRUE firstborn, set aside for loving an outsider; the silenced weaver and author of the reverse; Nemora's true mother.",
+    "edges": [
+      {
+        "to": "talis",
+        "type": "spouse",
+        "stage": 2,
+        "hidden": true
+      },
+      {
+        "to": "nemora",
+        "type": "true_parent_of",
+        "stage": 2,
+        "hidden": true
+      }
+    ]
+  },
+  {
+    "id": "eddan",
+    "given_name": "Eddan",
+    "title_english": "the Short Strand",
+    "generation": 2,
+    "sigil_id": null,
+    "stage_introduced": 1,
+    "note": "Vethra's third child, suri-o; died in infancy (the 'lost' thread referenced in D2). Provides the suri-o / suri-a affix contrast.",
+    "edges": []
+  },
+  {
+    "id": "talis",
+    "given_name": "Talis",
+    "title_english": "the Stranger",
+    "generation": 2,
+    "sigil_id": null,
+    "stage_introduced": 2,
+    "note": "Outsider (shen); Suvi's secret husband (venn-vau); Nemora's father; gone grey before Suvi. Appears only on the reverse. His name is the second half of the assembled Stage-3 key.",
+    "edges": [
+      {
+        "to": "nemora",
+        "type": "true_parent_of",
+        "stage": 2,
+        "hidden": true
+      }
+    ]
+  },
+  {
+    "id": "nemora",
+    "given_name": "Nemora",
+    "title_english": "the Unwoven",
+    "generation": 3,
+    "sigil_id": null,
+    "stage_introduced": 1,
+    "note": "Front: a nameless weft-suri 'of no nenne', dead young of fever, unrenthed. Reverse: trueborn (veresh), renthed by Suvi then unwoven; the rightful senior heir; mis-shorn. Her restored name NEMORA is the primary cord key.",
+    "edges": [
+      {
+        "to": "solenne",
+        "type": "thread_parent",
+        "stage": 1,
+        "hidden": false
+      },
+      {
+        "to": "caleth",
+        "type": "pattern_master",
+        "stage": 1,
+        "hidden": false
+      },
+      {
+        "to": "suvi",
+        "type": "child_of",
+        "stage": 2,
+        "hidden": true
+      },
+      {
+        "to": "talis",
+        "type": "child_of",
+        "stage": 2,
+        "hidden": true
+      },
+      {
+        "to": "ilse",
+        "type": "friend",
+        "stage": 2,
+        "hidden": true
+      },
+      {
+        "to": "dris",
+        "type": "lover",
+        "stage": 2,
+        "hidden": true
+      }
+    ]
+  },
+  {
+    "id": "edra",
+    "given_name": "Edra",
+    "title_english": "the Loomwright",
+    "generation": 3,
+    "sigil_id": null,
+    "stage_introduced": 1,
+    "note": "Marenn's eldest; 3rd Vara; childless, so the warp passed laterally to her sister Solenne.",
+    "edges": [
+      {
+        "to": "pol",
+        "type": "spouse",
+        "stage": 1,
+        "hidden": false
+      }
+    ]
+  },
+  {
+    "id": "solenne",
+    "given_name": "Solenne",
+    "title_english": "the Even Hand",
+    "generation": 3,
+    "sigil_id": "solenne_sigil",
+    "stage_introduced": 1,
+    "note": "Nemora's thread-mother (godmother). Front: the wise 4th Vara who 'steadied the house'. Cords: the USURPER, but a vara-set (installed and directed by the Factor); she ordered Nemora's removal. Covert edges are in solution.json.",
+    "edges": []
+  },
+  {
+    "id": "renor",
+    "given_name": "Renor",
+    "title_english": "the Brackish",
+    "generation": 3,
+    "sigil_id": null,
+    "stage_introduced": 1,
+    "note": "Marenn's son; passed over for the warp; bitter. Father of Avesa (the rival's motive-root).",
+    "edges": [
+      {
+        "to": "wenla",
+        "type": "spouse",
+        "stage": 1,
+        "hidden": false
+      },
+      {
+        "to": "avesa",
+        "type": "parent_of",
+        "stage": 1,
+        "hidden": false
+      }
+    ]
+  },
+  {
+    "id": "hadon",
+    "given_name": "Hadon",
+    "title_english": "the Unmarked",
+    "generation": 2,
+    "sigil_id": null,
+    "stage_introduced": 1,
+    "edges": []
+  },
+  {
+    "id": "pol",
+    "given_name": "Pol",
+    "title_english": "the Quiet Hand",
+    "generation": 3,
+    "sigil_id": null,
+    "stage_introduced": 1,
+    "edges": []
+  },
+  {
+    "id": "wenla",
+    "given_name": "Wenla",
+    "title_english": "the Farwife",
+    "generation": 3,
+    "sigil_id": null,
+    "stage_introduced": 1,
+    "edges": []
+  },
+  {
+    "id": "avesa",
+    "given_name": "Avesa",
+    "title_english": "the Loud Loom",
+    "generation": 4,
+    "sigil_id": "avesa_sigil",
+    "stage_introduced": 1,
+    "note": "Renor's daughter. Front/reverse: the loud RIVAL (rivenn) who openly claims the warp — looks guiltiest. Cords: the PATSY (offer-threa), framed by c7 and cleared by the evidence.",
+    "edges": []
+  },
+  {
+    "id": "caleth",
+    "given_name": "Caleth",
+    "title_english": "the Patient",
+    "generation": 3,
+    "sigil_id": "caleth_sigil",
+    "stage_introduced": 1,
+    "note": "Nemora's vela (tutor). Cords: the ASSASSIN (shoran). Court figure, not Vethra's blood.",
+    "edges": []
+  },
+  {
+    "id": "tovesh",
+    "given_name": "Tovesh",
+    "title_english": "the Counter",
+    "generation": 3,
+    "sigil_id": "tovesh_sigil",
+    "stage_introduced": 1,
+    "note": "The Karna (treasurer). Cords: the PAYMASTER, but a CONDUIT (karn-pass) — tied the wage from a sub-account the Factor funded. His compulsive honest accounting is why the chain survives.",
+    "edges": []
+  },
+  {
+    "id": "ilse",
+    "given_name": "Ilse",
+    "title_english": "the Open Face",
+    "generation": 3,
+    "sigil_id": "ilse_sigil",
+    "stage_introduced": 1,
+    "note": "Nemora's sevi (sworn friend) and companion. Cords: the SPY (liss), but COERCED by a karn-held — her own suri-en (infant).",
+    "edges": []
+  },
+  {
+    "id": "dris",
+    "given_name": "Dris",
+    "title_english": "the Farcomer",
+    "generation": 3,
+    "sigil_id": null,
+    "stage_introduced": 2,
+    "note": "Outsider; Nemora's velsa (secret lover). Cords: the WITNESS who preserved the cords and fled Oramei with them (how they reach the present).",
+    "edges": []
+  },
+  {
+    "id": "factor",
+    "given_name": "the Factor",
+    "title_english": "the Outside Counter",
+    "generation": null,
+    "sigil_id": "factor_sigil",
+    "stage_introduced": 3,
+    "note": "shen-karn; the foreign broker who funded Tovesh and directed Solenne. Off-tree; reached only via the second-key cords (c8).",
+    "edges": []
+  },
+  {
+    "id": "outloom",
+    "given_name": "the Outloom",
+    "title_english": "the Loom Beyond",
+    "generation": null,
+    "sigil_id": "outloom_sigil",
+    "stage_introduced": 3,
+    "note": "shen-loom; the foreign power that engineered Oramei's fall to absorb it; the Vell (prime mover). Its heir-nael equals the D1 border-nael, and its heirs are the order that employs the player.",
+    "edges": []
+  },
+  {
+    "id": "dav",
+    "given_name": "Dav",
+    "title_english": "the Sifter",
+    "generation": 3,
+    "sigil_id": null,
+    "stage_introduced": 1,
+    "noise": true,
+    "edges": []
+  },
+  {
+    "id": "tomas",
+    "given_name": "Tomas",
+    "title_english": "the Scourer",
+    "generation": 3,
+    "sigil_id": null,
+    "stage_introduced": 1,
+    "noise": true,
+    "edges": []
+  },
+  {
+    "id": "yola",
+    "given_name": "Yola",
+    "title_english": "the Tinter",
+    "generation": 3,
+    "sigil_id": null,
+    "stage_introduced": 1,
+    "noise": true,
+    "edges": []
+  }
+]

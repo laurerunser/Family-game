@@ -1,0 +1,103 @@
+/* theme.css — the retro-futuristic / holographic skin.
+   Palette: warm orange + purple primaries, green + blue accents, on deep space-violet. */
+:root {
+  --bg0: #0a0712;          /* deepest */
+  --bg1: #140c22;          /* panel */
+  --bg2: #1d1233;          /* raised */
+  --ink: #f4e6d0;          /* warm parchment text */
+  --ink-dim: #b39bd4;      /* muted purple text */
+  --orange: #ff9a3c;       /* primary warm */
+  --orange-bright: #ffb866;
+  --purple: #b06cff;       /* primary cool */
+  --purple-deep: #7b3fe4;
+  --green: #54ffb0;        /* accent */
+  --blue: #4fd6ff;         /* accent */
+  --red: #ff5d7a;          /* error/danger */
+  --gold: #ffd56b;
+  --line: rgba(176, 108, 255, 0.28);
+  --line-warm: rgba(255, 154, 60, 0.30);
+  --glow-o: 0 0 8px rgba(255, 154, 60, 0.55);
+  --glow-p: 0 0 10px rgba(176, 108, 255, 0.5);
+  --glow-g: 0 0 9px rgba(84, 255, 176, 0.5);
+  --glow-b: 0 0 9px rgba(79, 214, 255, 0.5);
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --display: "Space Grotesk", system-ui, sans-serif;
+  --crt: "VT323", var(--mono);
+}
+
+* { box-sizing: border-box; }
+/* the [hidden] attribute must win over component display rules (.overlay/.cord-dock/etc.) */
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body {
+  background:
+    radial-gradient(1200px 700px at 75% -10%, rgba(123, 63, 228, 0.22), transparent 60%),
+    radial-gradient(900px 600px at 0% 110%, rgba(255, 154, 60, 0.14), transparent 55%),
+    var(--bg0);
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: 15px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+/* CRT shell: scanlines + faint flicker + vignette */
+.crt {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+}
+.crt::before { /* scanlines */
+  content: "";
+  position: fixed; inset: 0; z-index: 50; pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(0,0,0,0.16) 3px, rgba(0,0,0,0) 4px);
+  mix-blend-mode: multiply;
+}
+.crt::after { /* vignette + glow */
+  content: "";
+  position: fixed; inset: 0; z-index: 49; pointer-events: none;
+  box-shadow: inset 0 0 180px rgba(10,7,18,0.95), inset 0 0 60px rgba(123,63,228,0.18);
+}
+
+h1, h2, h3 { font-family: var(--display); letter-spacing: 0.04em; }
+
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+::-webkit-scrollbar-thumb { background: var(--purple-deep); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--purple); }
+
+/* buttons */
+.ghost-btn, .accent-btn {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: linear-gradient(180deg, rgba(176,108,255,0.10), rgba(176,108,255,0.02));
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.ghost-btn:hover { border-color: var(--purple); box-shadow: var(--glow-p); color: var(--orange-bright); }
+.ghost-btn.sq { padding: 6px 10px; min-width: 34px; font-size: 16px; }
+.accent-btn {
+  color: var(--bg0); font-weight: 700;
+  background: linear-gradient(180deg, var(--orange-bright), var(--orange));
+  border: 1px solid var(--orange-bright);
+  box-shadow: var(--glow-o);
+}
+.accent-btn:hover { filter: brightness(1.1); }
+.accent-btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; filter: grayscale(0.5); }
+
+.hint { color: var(--ink-dim); font-size: 11px; font-style: italic; }
+
+/* a small reusable glow-text helper */
+.glow-o { color: var(--orange); text-shadow: var(--glow-o); }
+.glow-p { color: var(--purple); text-shadow: var(--glow-p); }
+.glow-g { color: var(--green); text-shadow: var(--glow-g); }
+.glow-b { color: var(--blue); text-shadow: var(--glow-b); }
