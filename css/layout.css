@@ -277,6 +277,36 @@
 .role-pop select, .role-pop button { width: 100%; margin-top: 6px; }
 .role-pop select { font-family: var(--mono); font-size: 12px; padding: 6px; background: rgba(10,7,18,0.8); color: var(--ink); border: 1px solid var(--line); border-radius: 4px; }
 
+/* anchors styled as buttons (e.g. the top-bar ABOUT link) */
+a.ghost-btn { text-decoration: none; display: inline-flex; align-items: center; }
+
+/* ---------------- site footer (credits) ---------------- */
+.sitefoot {
+  display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap;
+  padding: 7px 16px; border-top: 1px solid var(--line-warm);
+  background: linear-gradient(0deg, rgba(29,18,51,0.9), rgba(20,12,34,0.5));
+  font-family: var(--mono); font-size: 11px; color: var(--ink-dim); letter-spacing: 0.03em; z-index: 10;
+}
+.sitefoot .credits { text-align: center; }
+.sitefoot a { color: var(--orange); text-decoration: none; border-bottom: 1px dotted var(--line-warm); }
+.sitefoot a:hover { color: var(--orange-bright); text-shadow: var(--glow-o); border-bottom-color: var(--orange); }
+.sitefoot .about-link { color: var(--green); border-bottom-color: rgba(84,255,176,0.4); letter-spacing: 0.16em; }
+.sitefoot .about-link:hover { color: var(--green); text-shadow: var(--glow-g); }
+
+/* ---------------- about page ---------------- */
+.about-page { height: 100vh; overflow: auto; display: flex; flex-direction: column; }
+.about-wrap { max-width: 760px; margin: 0 auto; padding: 28px 32px 60px; }
+.about-wrap .back { display: inline-block; margin-bottom: 18px; font-family: var(--mono); font-size: 12px;
+  color: var(--blue); text-decoration: none; letter-spacing: 0.12em; }
+.about-wrap .back:hover { text-shadow: var(--glow-b); }
+.about-wrap h1 { color: var(--orange-bright); text-shadow: var(--glow-o); font-size: 28px; margin: 0 0 4px; }
+.about-wrap .sub { font-family: var(--mono); font-size: 12px; color: var(--purple); letter-spacing: 0.16em; margin: 0 0 24px; }
+.about-wrap h2 { color: var(--green); text-shadow: var(--glow-g); font-size: 16px; margin: 28px 0 8px; letter-spacing: 0.04em; }
+.about-wrap p { font-family: var(--mono); font-size: 14px; line-height: 1.8; color: var(--ink); }
+.about-wrap a { color: var(--orange); text-decoration: none; border-bottom: 1px dotted var(--line-warm); }
+.about-wrap a:hover { color: var(--orange-bright); text-shadow: var(--glow-o); border-bottom-color: var(--orange); }
+.about-wrap .sig { margin-top: 36px; font-style: italic; color: var(--ink-dim); }
+
 /* responsive: collapse columns on narrow screens */
 @media (max-width: 1100px) {
   .columns { grid-template-columns: 18rem 1fr; }
