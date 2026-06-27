@@ -9,6 +9,9 @@ import { renderBoard, initViewport, attemptLock, toast } from './tree.js';
 import { setDrawMode, isDrawMode } from './edges.js';
 import { renderCordDock, openCord } from './cords.js';
 import { refresh } from './stages.js';
+import { initNotes } from './notes.js';
+import { initTimer, renderTimer } from './timer.js';
+import { showFinale } from './finale.js';
 
 function seedStart() {
   const st = S.get();
@@ -26,6 +29,8 @@ function renderAll() {
   renderLexicon(document.getElementById('lexicon-list'));
   renderBoard();
   renderCordDock();
+  renderTimer();
+  document.getElementById('hints-toggle').checked = S.get().hintsOn;
   refresh();
 }
 
@@ -49,10 +54,13 @@ function wireChrome() {
     }
   });
 
-  // scratchpad
-  const sp = document.getElementById('scratchpad');
-  sp.value = S.get().scratch || '';
-  sp.addEventListener('input', () => S.setScratch(sp.value));
+  // notes pads (free notes + translations)
+  initNotes();
+
+  // extra-hints toggle (off by default)
+  const hints = document.getElementById('hints-toggle');
+  hints.checked = S.get().hintsOn;
+  hints.addEventListener('change', () => { S.setHints(hints.checked); document.dispatchEvent(new CustomEvent('game:change')); });
 
   // reset
   document.getElementById('btn-reset').addEventListener('click', () => {
@@ -78,10 +86,14 @@ async function boot() {
   wireChrome();
   wireSearch();
   initViewport();
+  initTimer();
   renderAll();
 
   // central refresh on any state change
   document.addEventListener('game:change', renderAll);
+
+  // returning winner: re-show their ending + result card (they can share again)
+  if (S.flag('finaleDone') && S.get().finale) showFinale();
 
   // dev helper (not surfaced in UI): window.__solveTree() to auto-fill correct names
   window.__solveTree = () => {

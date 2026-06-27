@@ -2,6 +2,7 @@
 import { DB } from './data.js';
 import * as S from './state.js';
 import { showOverlay } from './ui.js';
+import { renderVictory } from './wincard.js';
 
 export function showFinale() {
   const d = DB.byDoc['c_final'];
@@ -27,10 +28,12 @@ function showEnding(id) {
     <h2>${e.label}</h2>
     <p style="white-space:pre-wrap">${(e.text || e.meaning)}</p>
     <p class="hint">Nemora — veresh, renthed, the warp — is restored. The cloth is closed the way you chose to close it.</p>
+    <div id="victory-card"></div>
     <div class="actions">
       <button class="ghost-btn" id="ov-reflect">REFLECT (keep reading)</button>
       <button class="accent-btn" id="ov-again">BEGIN AGAIN</button>
     </div>`, { dismissable: false });
+  renderVictory(document.getElementById('victory-card'));
   document.getElementById('ov-reflect').addEventListener('click', () => { document.getElementById('overlay').hidden = true; });
   document.getElementById('ov-again').addEventListener('click', () => { S.reset(); location.reload(); });
 }

@@ -12,8 +12,13 @@ const DEFAULT = () => ({
   edges: [],                // accepted Stage-3 edges: { from, to, role }
   decoded: {},              // cord docId -> decoded plaintext (successful)
   flags: {},                // misc beats: rosettaSeen, stage2, stage3, frameReread, finaleDone
-  scratch: '',
+  scratch: '',              // free notes pad
+  transPad: '',             // translation pad
   finale: null,             // 'front' | 'reverse' | 'cords'
+  playMs: 0,                // accumulated active play time (ms), frozen at win
+  wonAt: null,              // timestamp of victory
+  hintsOn: false,           // "extra hints" setting (off by default)
+  usedHints: false,         // sticky: did the player ever enable hints?
 });
 
 let state = load();
@@ -85,4 +90,21 @@ export function flag(k) { return !!state.flags[k]; }
 
 export function setStage(n) { if (n > state.stage) { state.stage = n; save(); } }
 export function setScratch(t) { state.scratch = t; save(); }
-export function setFinale(choice) { state.finale = choice; setFlag('finaleDone'); save(); }
+export function setTransPad(t) { state.transPad = t; save(); }
+export function setFinale(choice) {
+  state.finale = choice;
+  if (!state.wonAt) state.wonAt = Date.now();
+  setFlag('finaleDone');
+  save();
+}
+
+// timer: accumulate active play time (frozen once won)
+export function addPlay(ms) { if (!state.wonAt) { state.playMs += ms; save(); } }
+export function hasWon() { return !!state.wonAt; }
+
+// settings
+export function setHints(on) {
+  state.hintsOn = !!on;
+  if (on) state.usedHints = true;
+  save();
+}

@@ -6,6 +6,22 @@ import { openReader } from './reader.js';
 
 const CAP = 3;
 
+// Hint (version b): how many NOT-yet-opened documents can be reached by searching the
+// terms that appear in this document (within the unlocked stage). Helps track down the
+// last few records without spoiling names/titles.
+export function reachableUndiscovered(doc) {
+  const st = S.get();
+  const found = new Set();
+  for (const term of doc.searchable_terms || []) {
+    for (const d of DB.documents) {
+      if (d.id === doc.id || S.isOpen(d.id)) continue;
+      if (d.stage > st.stage || d.is_finale || d.is_frame_reversal) continue;
+      if ((d.searchable_terms || []).includes(term)) found.add(d.id);
+    }
+  }
+  return found.size;
+}
+
 export function searchDocsForTerm(termId) {
   const st = S.get();
   return DB.documents

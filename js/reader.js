@@ -3,6 +3,8 @@
 import { DB } from './data.js';
 import * as S from './state.js';
 import { highlightBody } from './lexicon.js';
+import { reachableUndiscovered } from './search.js';
+import { recordTranslation } from './notes.js';
 
 const change = () => document.dispatchEvent(new CustomEvent('game:change'));
 let activeDoc = null;
@@ -42,14 +44,13 @@ function render() {
       html += `<button class="ghost-btn invert-btn" data-invert>◑ INVERT THE SIGNAL — read the reverse</button>`;
     }
   }
+  if (S.get().hintsOn) {
+    const n = reachableUndiscovered(d);
+    html += `<p class="reach-hint">↳ ${n} undiscovered ${n === 1 ? 'record is' : 'records are'} reachable by searching this one's words.</p>`;
+  }
   reader.innerHTML = html;
 
-  reader.querySelectorAll('.term').forEach((el) => {
-    el.addEventListener('click', () => {
-      const tid = el.dataset.term;
-      if (tid) { S.discover([tid]); window.__game?.searchTerm?.(tid); change(); }
-    });
-  });
+  reader.querySelectorAll('.term').forEach((el) => attachTermMenu(el));
   const invertBtn = reader.querySelector('[data-invert]');
   if (invertBtn) invertBtn.addEventListener('click', () => {
     inverted = !inverted;
@@ -65,6 +66,51 @@ function render() {
   // reflect active state in the doc list
   document.querySelectorAll('#doc-list li').forEach((li) =>
     li.classList.toggle('active', li.dataset.id === activeDoc));
+}
+
+// --- term hover menu: Search | Record translation --------------------------------------
+let termPop = null;
+let popHideTimer = null;
+function ensurePop() {
+  if (termPop) return termPop;
+  termPop = document.createElement('div');
+  termPop.className = 'term-pop';
+  termPop.hidden = true;
+  termPop.addEventListener('mouseenter', () => clearTimeout(popHideTimer));
+  termPop.addEventListener('mouseleave', () => scheduleHidePop());
+  document.body.appendChild(termPop);
+  return termPop;
+}
+function scheduleHidePop() { popHideTimer = setTimeout(() => { if (termPop) termPop.hidden = true; }, 180); }
+
+function attachTermMenu(el) {
+  const tid = el.dataset.term;
+  if (!tid) return;
+  const entry = DB.byTerm[tid];
+  const showPop = () => {
+    clearTimeout(popHideTimer);
+    const pop = ensurePop();
+    const gloss = entry ? entry.english : '';
+    pop.innerHTML = `<div class="tp-word">${el.textContent}</div>` +
+      (gloss ? `<div class="tp-gloss">${gloss.replace(/</g, '&lt;')}</div>` : '') +
+      `<button class="ghost-btn" data-act="search">🔍 Search records</button>` +
+      `<button class="ghost-btn" data-act="record">✎ Record translation</button>`;
+    const r = el.getBoundingClientRect();
+    pop.style.left = Math.min(window.innerWidth - 222, r.left) + 'px';
+    pop.style.top = (r.bottom + 6) + 'px';
+    pop.hidden = false;
+    pop.querySelector('[data-act="search"]').onclick = (ev) => {
+      ev.stopPropagation(); // don't let the global handler close the results box
+      S.discover([tid]); window.__game?.searchTerm?.(tid); pop.hidden = true; change();
+    };
+    pop.querySelector('[data-act="record"]').onclick = (ev) => {
+      ev.stopPropagation();
+      recordTranslation(el.textContent, gloss); pop.hidden = true;
+    };
+  };
+  el.addEventListener('mouseenter', showPop);
+  el.addEventListener('mouseleave', scheduleHidePop);
+  el.addEventListener('click', showPop); // tap support on touch devices
 }
 
 function stegoHTML(payload) {

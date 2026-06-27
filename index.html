@@ -5,6 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <title>The Reverse of the Cloth — Signal-Weave</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13'>%E2%9F%81</text></svg>" />
+  <meta name="description" content="A retro-futuristic deduction game: restore the genealogy of the fallen Loomhouse of Oramei from its holographic records, hidden reverses, and encrypted cords." />
+  <!-- social link previews (no spoilers) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="The Reverse of the Cloth — Signal-Weave" />
+  <meta property="og:description" content="Restore the genealogy of a fallen star-empire's house from holographic records, hidden reverses, and encrypted cords. Can you read the reverse of the cloth?" />
+  <meta property="og:image" content="assets/og-card.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Reverse of the Cloth — Signal-Weave" />
+  <meta name="twitter:description" content="A retro-futuristic deduction game. Restore the genealogy; read the reverse of the cloth." />
+  <meta name="twitter:image" content="assets/og-card.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=VT323&family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -72,11 +84,12 @@
       </section>
 
       <!-- RIGHT: status column -->
-      <section class="col col-right" aria-label="Status and notes">
+      <section class="col col-right" aria-label="Status, notes and settings">
         <div class="status-block">
           <div class="phase-line">
             <span class="phase-label">PHASE</span>
             <span id="phase-num" class="phase-num">1<span class="of">/3</span></span>
+            <span class="timer" title="Active time until you solve it"><span class="timer-label">TIME</span> <span id="timer-val" class="timer-val">0:00</span></span>
           </div>
           <div id="phase-name" class="phase-name">THE FRONT · read the Weave</div>
           <div class="progress">
@@ -84,23 +97,34 @@
             <span id="progress-pct" class="progress-pct">0%</span>
           </div>
           <ul id="objectives" class="objectives"></ul>
+          <label class="hint-toggle" title="Show, per record, how many undiscovered records you can reach from its words">
+            <input type="checkbox" id="hints-toggle" />
+            <span>Extra hints <span class="hint">— reachable records (off by default)</span></span>
+          </label>
         </div>
-        <div class="scratch-block">
-          <label for="scratchpad" class="scratch-label">SCRATCH-CORD <span class="hint">(your notes, saved locally)</span></label>
-          <textarea id="scratchpad" spellcheck="false"
-                    placeholder="Knot your own notes here…&#10;e.g. d4: ward's thread runs off the edge — does not end?"></textarea>
+
+        <div class="pads">
+          <div class="pad">
+            <label for="scratchpad" class="scratch-label">NOTES <span class="hint">(write freely, saved locally)</span></label>
+            <textarea id="scratchpad" spellcheck="false"
+                      placeholder="Knot your own notes here…&#10;e.g. d4: ward's strand runs off the edge — does not end?"></textarea>
+          </div>
+          <div class="pad">
+            <label for="transpad" class="scratch-label">TRANSLATIONS <span class="hint">(hover a word → “record translation”)</span></label>
+            <textarea id="transpad" spellcheck="false"
+                      placeholder="Hover an Old-Tongue word in a record and choose “record translation” to drop it here, then write your gloss. Fully editable — rearrange as you like."></textarea>
+          </div>
+        </div>
+
+        <div class="rightfoot">
+          <p class="credits">website and art by <a href="https://laurerunser.com" target="_blank" rel="noopener">laure runser</a>,
+            story by <a href="https://rosebertrand.com" target="_blank" rel="noopener">rose bertrand</a>,
+            game mechanics ripped off <a href="https://jamwitch.itch.io/trevosa" target="_blank" rel="noopener">The Archives of Tresova</a>
+            (excellent game!) — no ai use anywhere</p>
+          <a class="about-link" href="about.html">ABOUT THIS ARCHIVE →</a>
         </div>
       </section>
     </main>
-
-    <!-- ===================== SITE FOOTER ===================== -->
-    <footer class="sitefoot">
-      <span class="credits">website and art by <a href="https://laurerunser.com" target="_blank" rel="noopener">laure runser</a>,
-        story by <a href="https://rosebertrand.com" target="_blank" rel="noopener">rose bertrand</a>,
-        game mechanics ripped off <a href="https://jamwitch.itch.io/trevosa" target="_blank" rel="noopener">The Archives of Tresova</a>
-        (excellent game!) — no ai use anywhere</span>
-      <a class="about-link" href="about.html">ABOUT →</a>
-    </footer>
 
     <!-- ===================== OVERLAY (transitions, cords, finale) ===================== -->
     <div id="overlay" class="overlay" hidden>
