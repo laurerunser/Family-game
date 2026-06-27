@@ -1,18 +1,19 @@
 // main.js — boot + wiring. Loads content, seeds the start state, renders every panel, and
 // routes UI events. Exposes a small window.__game bridge so modules can call across cleanly.
-import { loadData, DB } from './data.js';
-import * as S from './state.js';
-import { wireSearch, searchTerm } from './search.js';
-import { openReader, renderDocList, rerenderReader } from './reader.js';
-import { renderLexicon } from './lexicon.js';
-import { renderBoard, initViewport, attemptLock, toast } from './tree.js';
-import { setDrawMode, isDrawMode } from './edges.js';
-import { attemptLockRelations, FAMILY_TIES } from './relationships.js';
-import { renderCordDock, openCord } from './cords.js';
-import { refresh } from './stages.js';
-import { initNotes } from './notes.js';
-import { initTimer, renderTimer } from './timer.js';
-import { showFinale } from './finale.js';
+import { loadData, DB } from './core/data.js';
+import * as S from './core/state.js';
+import { wireSearch, searchTerm } from './text/search.js';
+import { openReader, renderDocList, rerenderReader } from './text/reader.js';
+import { renderLexicon } from './text/lexicon.js';
+import { renderBoard, attemptLock, toast } from './board/tree.js';
+import { initViewport } from './board/viewport.js';
+import { setDrawMode, isDrawMode } from './board/edges.js';
+import { attemptLockRelations, FAMILY_TIES } from './board/relationships.js';
+import { renderCordDock, openCord } from './board/cords.js';
+import { refresh } from './phases/stages.js';
+import { initNotes } from './text/notes.js';
+import { initTimer, renderTimer } from './hud/timer.js';
+import { showFinale } from './phases/finale.js';
 
 function seedStart() {
   const st = S.get();

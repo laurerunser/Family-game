@@ -1,6 +1,6 @@
 // lexicon.js — the discovered-words glossary + in-body term highlighting.
-import { DB } from './data.js';
-import * as S from './state.js';
+import { DB } from '../core/data.js';
+import * as S from '../core/state.js';
 
 // Parse the player's translation pad into a map: lowercased word -> their gloss text.
 // A word "appears" in the pad once recorded (any line "word = ...", gloss may be empty).

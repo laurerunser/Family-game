@@ -1,8 +1,8 @@
 // edges.js — Stage-3 conspiracy graph: draw a directed edge between two portraits, label
 // it with a role, justify it with a decoded cord, and validate against solution.stage3_graph.
 // The forged cord (c7) backs only the "patsy" edge, and only once the player has caught it.
-import { DB } from './data.js';
-import * as S from './state.js';
+import { DB } from '../core/data.js';
+import * as S from '../core/state.js';
 
 const COVERT_ROLES = ['assassin', 'spy', 'paymaster', 'funder', 'installs', 'usurper',
   'prime_mover', 'patsy', 'leverage_over', 'witness_for'];

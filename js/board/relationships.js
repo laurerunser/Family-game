@@ -3,8 +3,8 @@
 // you need four correct ties (or the final remainder) with NO false ones, or nothing locks.
 // The two hidden figures, Talis and Dris, carry no name dropdown: they reveal and snap to
 // colour together once the ties that pin them are locked.
-import { DB } from './data.js';
-import * as S from './state.js';
+import { DB } from '../core/data.js';
+import * as S from '../core/state.js';
 
 // the hidden ties the reverse reveals (the answer key for Phase 2)
 export const FAMILY_TIES = [

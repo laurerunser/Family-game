@@ -1,7 +1,7 @@
 // search.js — the emergent discovery gate. A term is searchable only once discovered;
 // search returns documents containing it (within the unlocked stage), date-sorted, capped.
-import { DB, termByThrenne } from './data.js';
-import * as S from './state.js';
+import { DB, termByThrenne } from '../core/data.js';
+import * as S from '../core/state.js';
 import { openReader } from './reader.js';
 
 const CAP = 3;

@@ -15,7 +15,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { decode, decodePlainCount, decodeNumeric, assembleKey } from '../js/cipher.js';
+import { decode, decodePlainCount, decodeNumeric, assembleKey } from '../js/core/cipher.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA = join(__dirname, '..', 'data');

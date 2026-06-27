@@ -48,16 +48,25 @@ python3 -m http.server 8000   # or `npm run serve`
 ```
 index.html              # the shell
 css/                    # theme.css (CRT/holo skin) + layout.css (3 columns)
-js/                      # engine modules (see below)
+js/                     # engine modules, grouped by concern (see below)
 data/*.json             # GENERATED game content (do not hand-edit)
 content/                # the reskin source: theme-bible.md, rename.js, prose.js, src-*.json
-tools/                  # generate-content.js, verify-solvability.js, e2e.mjs
+tools/                  # generate-content.js, verify-solvability.js, make-docs.js, e2e.mjs
+SOLUTION.md TRANSLATION.md DEVLOG.md
 ```
 
-`js/` modules: `cipher.js` (the cord cipher, shared with the tools), `state.js`,
-`data.js`, `search.js`, `lexicon.js`, `reader.js`, `tree.js` (board + pan/zoom + batch-lock),
-`cords.js` (Stage-3 workspace), `edges.js` (graph drawing + validation), `stages.js`
-(gates/progress/transitions), `finale.js`, `main.js` (wiring).
+`js/` is organized into folders:
+
+```
+js/main.js              # boot + wiring
+js/core/    cipher.js · state.js · data.js          # cipher (shared with tools), persistence, loading
+js/text/    search.js · lexicon.js · reader.js · notes.js   # records, glossary, the two note pads
+js/board/   tree.js · viewport.js · relationships.js · edges.js · cords.js
+                                                    # the family tree, pan/zoom, Phase-2 ties,
+                                                    # Phase-3 conspiracy edges, cord workspace
+js/phases/  stages.js · transitions.js · finale.js  # gates/progress, the between-phase beats, endings
+js/hud/     timer.js · ui.js · wincard.js           # the timer, overlay helpers, victory card + sharing
+```
 
 ## Content pipeline (the reskin)
 

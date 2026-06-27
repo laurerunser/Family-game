@@ -1,6 +1,6 @@
 // timer.js — accumulates ACTIVE play time (only while the tab is visible and the game is
 // unsolved). Freezes at victory. Persisted via state.playMs so it survives reloads.
-import * as S from './state.js';
+import * as S from '../core/state.js';
 
 let lastTick = Date.now();
 

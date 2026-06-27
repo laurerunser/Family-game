@@ -13,7 +13,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { encode, assembleKey, letterIndex } from '../js/cipher.js';
+import { encode, assembleKey, letterIndex } from '../js/core/cipher.js';
 import { PEOPLE_TITLES, LEXICON, renameWord } from '../content/rename.js';
 import { TITLES, BODIES, ENDINGS } from '../content/prose.js';
 

@@ -1,7 +1,7 @@
 // reader.js — the document reader: prose, term highlighting, and the "invert the signal"
 // reverse-channel toggle with its steganography grid.
-import { DB } from './data.js';
-import * as S from './state.js';
+import { DB } from '../core/data.js';
+import * as S from '../core/state.js';
 import { highlightBody } from './lexicon.js';
 import { reachableUndiscovered } from './search.js';
 import { recordTranslation } from './notes.js';

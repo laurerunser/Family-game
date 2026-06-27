@@ -1,7 +1,7 @@
 // notes.js — the two right-column pads: a free NOTES pad and a TRANSLATIONS pad that words
 // can be dropped into from the reader's term hover-menu. Both persist to localStorage and
 // stay fully editable (copy/paste/rearrange freely).
-import * as S from './state.js';
+import * as S from '../core/state.js';
 
 export function initNotes() {
   const notes = document.getElementById('scratchpad');

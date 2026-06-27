@@ -1,14 +1,15 @@
 // tree.js — the middle board: holographic portrait nodes laid out by generation, with
 // NAME/TITLE slots (Stages 1-2), batch-locked validation, kin edges, pan/zoom, and the
 // Stage-3 edge-draw hook. Off-tree figures (Factor, Outloom) surface in Stage 3.
-import { DB } from './data.js';
-import * as S from './state.js';
+import { DB } from '../core/data.js';
+import * as S from '../core/state.js';
 import { tryDrawEdge, isDrawMode } from './edges.js';
 import { startRelDraw, isRelMode, dropDraft } from './relationships.js';
 
 const NEW_CHARS = ['talis', 'dris']; // revealed only on the reverse; no name dropdowns
 
-const W = 2400, H = 1600;
+export const BOARD_W = 2400, BOARD_H = 1600;
+const W = BOARD_W, H = BOARD_H;
 const ROW_Y = { 1: 220, 2: 540, 3: 920, 4: 1240, off: 1460 };
 const ORDER = {
   1: ['vethra', 'orel'],
@@ -234,78 +235,4 @@ export function toast(msg, ms = 3200) {
   toastTimer = setTimeout(() => { t.hidden = true; }, ms);
 }
 
-// ---- pan / zoom -------------------------------------------------------------------------
-export function initViewport() {
-  const vp = document.getElementById('viewport');
-  const board = document.getElementById('board');
-  let tx = 0, ty = 0, scale = 0.62;
-  const apply = () => { board.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`; };
-  const clampScale = (s) => Math.min(2.2, Math.max(0.28, s));
-
-  function zoomAt(cx, cy, factor) {
-    const rect = vp.getBoundingClientRect();
-    const px = cx - rect.left, py = cy - rect.top;
-    const ns = clampScale(scale * factor);
-    // keep the point under the cursor fixed
-    tx = px - (px - tx) * (ns / scale);
-    ty = py - (py - ty) * (ns / scale);
-    scale = ns; apply();
-  }
-  function fit() {
-    const rect = vp.getBoundingClientRect();
-    scale = clampScale(Math.min(rect.width / W, rect.height / H) * 1.5);
-    tx = (rect.width - W * scale) / 2;
-    ty = 40;
-    apply();
-  }
-
-  // wheel: ctrl/⌘ (and trackpad pinch) => zoom; otherwise pan
-  vp.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    if (e.ctrlKey || e.metaKey) {
-      zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.12 : 1 / 1.12);
-    } else {
-      tx -= e.deltaX; ty -= e.deltaY; apply();
-    }
-  }, { passive: false });
-
-  // pointer drag to pan
-  let dragging = false, lastX = 0, lastY = 0, pid = null;
-  vp.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('select') || e.target.closest('.rel-chip')
-        || (e.target.closest('.node') && (isDrawMode() || isRelMode()))) return;
-    dragging = true; lastX = e.clientX; lastY = e.clientY; pid = e.pointerId;
-    vp.classList.add('grabbing'); vp.setPointerCapture(pid);
-  });
-  vp.addEventListener('pointermove', (e) => {
-    if (!dragging) return;
-    tx += e.clientX - lastX; ty += e.clientY - lastY;
-    lastX = e.clientX; lastY = e.clientY; apply();
-  });
-  const endDrag = () => { dragging = false; vp.classList.remove('grabbing'); };
-  vp.addEventListener('pointerup', endDrag);
-  vp.addEventListener('pointercancel', endDrag);
-
-  // touch pinch (iPad / phones)
-  let pinchDist = 0, pinchMid = null;
-  vp.addEventListener('touchmove', (e) => {
-    if (e.touches.length === 2) {
-      e.preventDefault();
-      const [a, b] = e.touches;
-      const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-      const mid = { x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 };
-      if (pinchDist) zoomAt(mid.x, mid.y, d / pinchDist);
-      pinchDist = d; pinchMid = mid;
-    }
-  }, { passive: false });
-  vp.addEventListener('touchend', () => { pinchDist = 0; });
-
-  document.getElementById('btn-zoom-in').addEventListener('click', () => {
-    const r = vp.getBoundingClientRect(); zoomAt(r.left + r.width / 2, r.top + r.height / 2, 1.2);
-  });
-  document.getElementById('btn-zoom-out').addEventListener('click', () => {
-    const r = vp.getBoundingClientRect(); zoomAt(r.left + r.width / 2, r.top + r.height / 2, 1 / 1.2);
-  });
-  document.getElementById('btn-zoom-reset').addEventListener('click', fit);
-  fit();
-}
+// pan/zoom lives in ./viewport.js

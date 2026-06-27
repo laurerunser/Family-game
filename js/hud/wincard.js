@@ -2,7 +2,7 @@
 // player's finish time and whether they used hints, plus social sharing. Everything is
 // client-side (works on GitHub Pages): a generated PNG + the Web Share API where available,
 // with Twitter / WhatsApp / Facebook intent links and a Download fallback (for Instagram).
-import * as S from './state.js';
+import * as S from '../core/state.js';
 import { formatMs } from './timer.js';
 
 function shareUrl() { return location.origin + location.pathname; }

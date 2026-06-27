@@ -1,8 +1,8 @@
 // cords.js — the Stage-3 cord workspace dock: decode lettered cords with a player-supplied
 // key, read numeric ledgers, match naels to people, and expose the forged cord's tell.
-import { DB } from './data.js';
-import * as S from './state.js';
-import { decode, decodePlainCount, decodeNumeric, letterIndex } from './cipher.js';
+import { DB } from '../core/data.js';
+import * as S from '../core/state.js';
+import { decode, decodePlainCount, decodeNumeric, letterIndex } from '../core/cipher.js';
 
 const change = () => document.dispatchEvent(new CustomEvent('game:change'));
 let active = null;

@@ -1,8 +1,8 @@
 // finale.js — the medium-choice ending: front / reverse / cords. The medium is the meaning.
-import { DB } from './data.js';
-import * as S from './state.js';
-import { showOverlay } from './ui.js';
-import { renderVictory } from './wincard.js';
+import { DB } from '../core/data.js';
+import * as S from '../core/state.js';
+import { showOverlay } from '../hud/ui.js';
+import { renderVictory } from '../hud/wincard.js';
 
 export function showFinale() {
   const d = DB.byDoc['c_final'];
