@@ -4,6 +4,9 @@
 import { DB } from './data.js';
 import * as S from './state.js';
 import { tryDrawEdge, isDrawMode } from './edges.js';
+import { startRelDraw, isRelMode, dropDraft } from './relationships.js';
+
+const NEW_CHARS = ['talis', 'dris']; // revealed only on the reverse; no name dropdowns
 
 const W = 2400, H = 1600;
 const ROW_Y = { 1: 220, 2: 540, 3: 920, 4: 1240, off: 1460 };
@@ -26,12 +29,11 @@ export function nodePos(id) { return positions[id]; }
 function placeable() {
   return DB.people.filter((p) => p.generation != null && DB.solution.tree[p.id]);
 }
-function nameOptions() {
-  return [...new Set(placeable().map((p) => p.given_name))].sort();
-}
-function titleOptions() {
-  return [...new Set(placeable().map((p) => DB.solution.tree[p.id].title))].sort();
-}
+// dropdowns exist only in Phase 1, so only offer the front (Phase-1) figures' names/titles —
+// Talis and Dris stay hidden until the reverse reveals them.
+function frontPlaceable() { return placeable().filter((p) => p.stage_introduced <= 1); }
+function nameOptions() { return [...new Set(frontPlaceable().map((p) => p.given_name))].sort(); }
+function titleOptions() { return [...new Set(frontPlaceable().map((p) => DB.solution.tree[p.id].title))].sort(); }
 
 function visibleIds() {
   const st = S.get();
@@ -75,10 +77,13 @@ function buildNode(id) {
   el.style.top = pos.y + 'px';
 
   const offtree = ORDER.off.includes(id);
+  const newChar = NEW_CHARS.includes(id);
+  const revealedChar = newChar && S.flag('reveal:' + id);
   const locked = S.isLocked(id);
   if (locked) el.classList.add('locked');
   if (offtree) el.classList.add('offtree');
-  if (DB.solution.rightful_line?.includes(id) && st.stage >= 2 && locked) el.classList.add('rightful');
+  if (revealedChar) el.classList.add('revealed');
+  if (DB.solution.rightful_line?.includes(id) && st.stage >= 2 && (locked || revealedChar)) el.classList.add('rightful');
 
   let inner = `<div class="portrait">${PORTRAIT}</div>`;
 
@@ -88,7 +93,11 @@ function buildNode(id) {
     if (known) el.classList.add('revealed');
     inner += `<div class="slot-static">${known ? p.given_name : '— unknown —'}</div>`;
     inner += `<div class="nid">${known ? p.title_english : 'outside the house'}</div>`;
-  } else if (locked) {
+  } else if (newChar && !revealedChar) {
+    // a figure the front never named — no dropdown; pin it by drawing its true ties
+    inner += `<div class="slot-static" style="color:var(--ink-dim)">${id === 'talis' ? 'the stranger' : 'the farcomer'} (?)</div>`;
+    inner += `<div class="nid">drawn in from the reverse</div>`;
+  } else if (locked || revealedChar) {
     inner += `<div class="slot-static">${sol.given_name}</div>`;
     inner += `<div class="slot-static" style="color:var(--gold)">${sol.title}</div>`;
   } else {
@@ -108,11 +117,10 @@ function buildNode(id) {
     sel.addEventListener('pointerdown', (e) => e.stopPropagation()); // don't start a pan
   });
 
-  // Stage-3 edge drawing: click node to pick source/target
+  // node click: Phase 2 draws family relationships; Phase 3 draws conspiracy edges
   el.addEventListener('click', (e) => {
-    if (!isDrawMode()) return;
-    e.stopPropagation();
-    tryDrawEdge(id, el);
+    if (isRelMode()) { e.stopPropagation(); startRelDraw(id, el); return; }
+    if (isDrawMode()) { e.stopPropagation(); tryDrawEdge(id, el); }
   });
   return el;
 }
@@ -136,18 +144,20 @@ function drawEdges() {
     out += `<path class="edge-line ${cls}" d="M ${pa.x} ${pa.y} L ${pb.x} ${pb.y}"/>`;
     if (label) out += `<text class="edge-label ${cls}" x="${mx}" y="${my - 6}" text-anchor="middle">${label}</text>`;
   };
-  // kin edges from people data (visible, within stage; hidden edges show in Stage 2+)
+  // front kin edges (the visible family structure). Hidden ties are NEVER auto-shown —
+  // the player discovers and draws them in Phase 2.
   for (const p of DB.people) {
     if (!positions[p.id]) continue;
     for (const e of p.edges || []) {
-      if (!positions[e.to]) continue;
-      if (e.hidden && st.stage < (e.stage || 2)) continue;
-      if (e.stage > st.stage) continue;
-      const cls = e.hidden ? 'hidden-edge' : 'kin';
-      line(p.id, e.to, cls, ROLE_SHORT[e.type] ?? '');
+      if (!positions[e.to] || e.hidden || e.stage > st.stage) continue;
+      line(p.id, e.to, 'kin', ROLE_SHORT[e.type] ?? '');
     }
   }
-  // covert Stage-3 edges drawn by the player
+  // Phase-2 family ties the player has LOCKED
+  for (const e of st.relations) line(e.from, e.to, 'hidden-edge', ROLE_SHORT[e.role] ?? e.role);
+  // Phase-2 proposed (not yet locked) ties — dashed candidates
+  for (const e of st.relDraft) line(e.from, e.to, 'candidate', ROLE_SHORT[e.role] || e.role);
+  // covert Stage-3 conspiracy edges drawn by the player
   for (const e of st.edges) line(e.from, e.to, 'covert', ROLE_SHORT[e.role] ?? e.role);
   svg.innerHTML = out;
 }
@@ -157,7 +167,19 @@ export function renderBoard() {
   const nodesEl = document.getElementById('nodes');
   nodesEl.innerHTML = '';
   for (const id of visibleIds()) nodesEl.appendChild(buildNode(id));
-  if (isDrawMode()) nodesEl.querySelectorAll('.node').forEach((n) => n.classList.add('draw-mode'));
+  if (isDrawMode() || isRelMode()) nodesEl.querySelectorAll('.node').forEach((n) => n.classList.add('draw-mode'));
+  // removable chips for proposed Phase-2 ties
+  for (const e of S.get().relDraft) {
+    const pa = positions[e.from], pb = positions[e.to];
+    if (!pa || !pb) continue;
+    const chip = document.createElement('div');
+    chip.className = 'rel-chip';
+    chip.style.left = ((pa.x + pb.x) / 2) + 'px';
+    chip.style.top = ((pa.y + pb.y) / 2) + 'px';
+    chip.innerHTML = `<span>${(ROLE_SHORT[e.role] || e.role) || 'tie'}</span><button title="remove">✕</button>`;
+    chip.querySelector('button').addEventListener('click', (ev) => { ev.stopPropagation(); dropDraft(e); });
+    nodesEl.appendChild(chip);
+  }
   drawEdges();
 }
 
@@ -250,7 +272,8 @@ export function initViewport() {
   // pointer drag to pan
   let dragging = false, lastX = 0, lastY = 0, pid = null;
   vp.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('select') || e.target.closest('.node') && isDrawMode()) return;
+    if (e.target.closest('select') || e.target.closest('.rel-chip')
+        || (e.target.closest('.node') && (isDrawMode() || isRelMode()))) return;
     dragging = true; lastX = e.clientX; lastY = e.clientY; pid = e.pointerId;
     vp.classList.add('grabbing'); vp.setPointerCapture(pid);
   });

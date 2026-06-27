@@ -2,12 +2,13 @@
 // (the Turn, the cords hand-over, the frame reversal, and the finale).
 import { DB } from './data.js';
 import * as S from './state.js';
-import { renderBoard, toast, pairingStatus } from './tree.js';
+import { renderBoard, toast } from './tree.js';
 import { setDrawMode, graphProgress, clusterProgress } from './edges.js';
 import { showOverlay, hideOverlay } from './ui.js';
 import { showFinale } from './finale.js';
 import { formatMs } from './timer.js';
 import { milestoneShareHTML, wireShare } from './wincard.js';
+import { relationProgress, relLockInfo } from './relationships.js';
 
 const PHASE_NAME = {
   1: 'THE FRONT · read the Weave',
@@ -35,14 +36,14 @@ function objectives() {
     ];
   }
   if (st.stage === 2) {
-    const s2 = placeableUpTo(2);
-    const locked = s2.filter((p) => S.isLocked(p.id)).length;
     const rr = reversesRead().length;
+    const rp = relationProgress();
     return [
       ['Restore her name from the reverse (read “The Reverse of the Ward’s Vael”)', S.isRead('r1')],
       ['Prove the venn-vau (Talis) and the true firstborn (read r2, r3)', S.isRead('r2') && S.isRead('r3')],
       [`Read all the reverses (${rr}/7)`, rr >= 7],
-      [`Re-judge the warp — lock every figure, four at a time (${locked}/${s2.length})`, locked === s2.length],
+      [`Draw the hidden relationships — locking four at a time (${rp.done}/${rp.total})`, rp.done === rp.total],
+      ['Reveal Talis & Dris together (lock their ties)', S.flag('reveal:talis')],
       ['Take both keys (read “The Name the Vael Denied”)', S.isRead('r7')],
     ];
   }
@@ -61,13 +62,14 @@ function objectives() {
 // ---- progress bar (global across the whole game) ----------------------------------------
 function progressFraction() {
   const st = S.get();
-  const s1 = placeableUpTo(1), s2 = placeableUpTo(2);
+  const s1 = placeableUpTo(1);
   const cp = clusterProgress();
+  const rp = relationProgress();
   const parts = [
     frac(s1.filter((p) => S.isLocked(p.id)).length, s1.length),
     st.flags.rosettaSeen ? 1 : 0,
     frac(reversesRead().length, 7),
-    frac(s2.filter((p) => S.isLocked(p.id)).length, s2.length),
+    frac(rp.done, rp.total),
     frac(letteredCords().filter((d) => S.isDecoded(d.id)).length, letteredCords().length),
     st.flags.forgeryCaught ? 1 : 0,
     st.flags.frameReread ? 1 : 0,
@@ -89,9 +91,10 @@ function checkGates() {
     turnTransition();
     return;
   }
-  // Stage 2 -> 3: the reverses are read, the warp re-judged, both keys taken.
-  if (st.stage === 2 && reversesRead().length >= 7 && allLocked(placeableUpTo(2))
-      && S.isRead('r7') && !S.flag('cordsHandover')) {
+  // Stage 2 -> 3: the reverses are read, every hidden relationship drawn (Talis & Dris
+  // revealed), and both keys taken.
+  if (st.stage === 2 && reversesRead().length >= 7 && relationProgress().done === relationProgress().total
+      && S.flag('reveal:talis') && S.isRead('r7') && !S.flag('cordsHandover')) {
     S.setFlag('cordsHandover'); S.setStage(3);
     S.discover(['karna', 'karn', 'shoran', 'vara_set', 'karn_held', 'karn_pass', 'false_karn', 'offer_threa', 'shen_karn', 'shen_loom', 'vell']);
     cordsTransition();
@@ -123,13 +126,16 @@ function turnTransition() {
     ${milestoneShareHTML()}
     <hr style="border-color:var(--line);margin:18px 0" />
     <h2 style="font-size:20px">The world is bigger than the front admits.</h2>
-    <p>The reverse overturns what the front told you — and names two people it hid: <b>Talis</b>, the
-    secret husband, and <b>Dris</b>, the secret lover. Place them the way you placed the rest — in
-    <b class="glow-o">clusters of four</b> (here, the final pair): give a name <i>and</i> a title, have
-    <i>all</i> of them right, and don’t over-name. A wrong one, or one too many, and <b>nothing</b> locks
-    until you pare back to the ones you’re sure of.</p>
+    <p>The reverse doesn’t hand you a pile of new names — it reveals hidden <b>relationships</b>: who was
+    secretly wed, who was truly whose child, who loved whom. Your work now is to <b class="glow-o">draw
+    those ties</b> on the tree — click one figure, then another, and name the bond. They lock <b>four at a
+    time</b>, and only if every tie in the batch is true; one false tie and nothing locks.</p>
+    <p>Two people the front never named sit greyed-out and unnamed — <b>the stranger</b> and <b>the
+    farcomer</b>. You don’t pick their names from a list; you <b>pin them by their ties</b>. Once both are
+    correctly tied in, <b class="glow-g">Talis</b> and <b class="glow-g">Dris</b> step into the light
+    together, in colour.</p>
     <p class="hint">Tip: turn on <b>“Warn me when I’ve named too many”</b> in the right column for a
-    heads-up when more figures are fully named than will lock at once. (All help toggles are off by default.)</p>
+    heads-up when a batch won’t lock. (All help toggles are off by default.)</p>
     <div class="actions"><button class="accent-btn" id="ov-go">KEEP DIVING — ENTER THE REVERSE</button></div>`);
   wireShare(document.getElementById('overlay-card'),
     `I read the front of the fallen Loomhouse of Oramei and reached the hidden reverse in ${t}. Can you?`);
@@ -177,8 +183,6 @@ export function refresh() {
   const st = S.get();
   document.getElementById('phase-num').innerHTML = `${st.stage}<span class="of">/3</span>`;
   document.getElementById('phase-name').textContent = PHASE_NAME[st.stage];
-  document.getElementById('board-title').textContent =
-    st.stage === 3 ? 'THE CONSPIRACY · draw the cords' : (st.stage === 2 ? 'THE REVERSE · re-judge the warp' : 'THE STANDING WARP');
 
   const pct = Math.round(progressFraction() * 100);
   document.getElementById('progress-fill').style.width = pct + '%';
@@ -187,15 +191,18 @@ export function refresh() {
   const ul = document.getElementById('objectives');
   ul.innerHTML = objectives().map(([t, done]) => `<li class="${done ? 'done' : ''}">${t}</li>`).join('');
 
-  // "named too many" warning (Phase 2+, opt-in)
+  // opt-in warning when a lock won't go through (Phase 2 relationship drafting)
   const warnEl = document.getElementById('pair-warning');
-  const ps = pairingStatus();
-  if (S.get().warnPairs && ps.strict && ps.paired.length > ps.required) {
-    warnEl.hidden = false;
-    warnEl.innerHTML = `⚠ You have <b>${ps.paired.length}</b> figures fully named, but only <b>${ps.required}</b> lock at a time —
-      nothing will lock until you pare back to ${ps.required} you’re sure of.`;
-  } else {
-    warnEl.hidden = true;
+  warnEl.hidden = true;
+  if (S.get().warnPairs && st.stage === 2) {
+    const ri = relLockInfo();
+    if (ri.wrong.length) {
+      warnEl.hidden = false;
+      warnEl.innerHTML = `⚠ <b>${ri.wrong.length}</b> of your proposed ties don’t hold — nothing will lock until you remove the false one${ri.wrong.length > 1 ? 's' : ''}.`;
+    } else if (ri.draft.length && ri.draft.length < ri.required) {
+      warnEl.hidden = false;
+      warnEl.innerHTML = `⚠ Relationships lock four at a time — you have <b>${ri.draft.length}</b>, need <b>${ri.required}</b> before any lock.`;
+    }
   }
 
   // Stage-3: swap the LOCK button for a DRAW toggle
@@ -203,9 +210,15 @@ export function refresh() {
   if (st.stage >= 3) {
     lockBtn.textContent = window.__drawToggle ? '✦ DRAWING — click to stop' : '✎ DRAW EDGE';
     lockBtn.classList.toggle('accent-btn', !!window.__drawToggle);
+  } else if (st.stage === 2) {
+    lockBtn.textContent = 'LOCK RELATIONSHIPS';
+    lockBtn.classList.add('accent-btn');
   } else {
     lockBtn.textContent = 'LOCK ANSWERS';
   }
+  document.getElementById('board-title').textContent =
+    st.stage === 3 ? 'THE CONSPIRACY · draw the cords'
+      : (st.stage === 2 ? 'THE REVERSE · draw the hidden ties' : 'THE STANDING WARP');
 
   checkGates();
 }

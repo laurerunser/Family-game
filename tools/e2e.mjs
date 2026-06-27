@@ -60,8 +60,9 @@ for (const r of ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7']) {
   await page.locator('#reader [data-invert]').click({ timeout: 5000 }); // reveal the hidden payload too
   await page.waitForTimeout(20);
 }
-await get(() => window.__dev.lockTreeWaves());
+await get(() => window.__dev.lockRelationships());
 await page.waitForTimeout(300);
+ok(await get(() => JSON.parse(localStorage.getItem('reverse-of-the-cloth.v1')).flags['reveal:talis']) === true, 'Talis & Dris revealed by their ties');
 ok(await overlayVisible(), 'Stage 2→3 cords overlay appeared');
 await clickOverlayBtn('ov-go');
 await page.waitForTimeout(200);

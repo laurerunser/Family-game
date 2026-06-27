@@ -9,7 +9,9 @@ const DEFAULT = () => ({
   slots: {},                // personId -> { name, title }
   locked: {},               // personId -> true (correct & locked)
   lockBatches: 0,           // how many successful batch-locks (drives the cadence)
-  edges: [],                // accepted Stage-3 edges: { from, to, role }
+  edges: [],                // accepted Stage-3 conspiracy edges: { from, to, role }
+  relations: [],            // locked Phase-2 family ties: { from, to, role }
+  relDraft: [],             // proposed (not yet locked) Phase-2 family ties
   decoded: {},              // cord docId -> decoded plaintext (successful)
   flags: {},                // misc beats: rosettaSeen, stage2, stage3, frameReread, finaleDone
   scratch: '',              // free notes pad
@@ -82,6 +84,24 @@ export function addEdge(edge) {
 }
 export function hasEdge(from, to, role) {
   return state.edges.some((e) => e.from === from && e.to === to && (role ? e.role === role : true));
+}
+
+// Phase-2 family relationships (drawn on the tree)
+const sameTie = (a, b) => a.from === b.from && a.to === b.to && a.role === b.role;
+export function addRelDraft(tie) {
+  if (!state.relDraft.some((t) => sameTie(t, tie)) && !state.relations.some((t) => sameTie(t, tie))) {
+    state.relDraft.push(tie); save();
+  }
+}
+export function removeRelDraft(tie) { state.relDraft = state.relDraft.filter((t) => !sameTie(t, tie)); save(); }
+export function clearRelDraft() { state.relDraft = []; save(); }
+export function lockRelations(ties) {
+  for (const t of ties) if (!state.relations.some((x) => sameTie(x, t))) state.relations.push(t);
+  state.relDraft = state.relDraft.filter((d) => !ties.some((t) => sameTie(t, d)));
+  save();
+}
+export function hasRelation(from, to, role) {
+  return state.relations.some((e) => e.from === from && e.to === to && (role ? e.role === role : true));
 }
 
 export function setDecoded(id, plain) { state.decoded[id] = plain; save(); }

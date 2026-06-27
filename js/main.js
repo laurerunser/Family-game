@@ -7,6 +7,7 @@ import { openReader, renderDocList, rerenderReader } from './reader.js';
 import { renderLexicon } from './lexicon.js';
 import { renderBoard, initViewport, attemptLock, toast } from './tree.js';
 import { setDrawMode, isDrawMode } from './edges.js';
+import { attemptLockRelations, FAMILY_TIES } from './relationships.js';
 import { renderCordDock, openCord } from './cords.js';
 import { refresh } from './stages.js';
 import { initNotes } from './notes.js';
@@ -46,12 +47,15 @@ function wireChrome() {
     document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
   }));
 
-  // lock / draw button (context-sensitive by stage)
+  // lock / draw button (context-sensitive by phase)
   document.getElementById('btn-lock').addEventListener('click', () => {
-    if (S.get().stage >= 3) {
+    const stage = S.get().stage;
+    if (stage >= 3) {
       window.__drawToggle = !isDrawMode();
       setDrawMode(window.__drawToggle);
       toast(window.__drawToggle ? 'Edge-draw on: click a source, then a target.' : 'Edge-draw off.');
+    } else if (stage === 2) {
+      attemptLockRelations();
     } else {
       attemptLock();
     }
@@ -128,6 +132,12 @@ async function boot() {
         });
         attemptLock();
       }
+      document.dispatchEvent(new CustomEvent('game:change'));
+    },
+    // draw + lock all Phase-2 family ties (reveals Talis & Dris)
+    lockRelationships() {
+      for (const t of FAMILY_TIES) S.addRelDraft(t);
+      attemptLockRelations();
       document.dispatchEvent(new CustomEvent('game:change'));
     },
     addAllEdges() {
