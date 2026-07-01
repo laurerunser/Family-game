@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 72" role="img" aria-label="nemora">
+<defs>
+<filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+<feGaussianBlur stdDeviation="1.3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
+<linearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+<stop offset="0" stop-color="#54ffb0" stop-opacity="0.16"/><stop offset="1" stop-color="#54ffb0" stop-opacity="0.02"/>
+</linearGradient>
+</defs>
+<rect x="2" y="2" width="116" height="68" rx="8" fill="url(#field)"/>
+<g opacity="1">
+<g fill="none" stroke="#54ffb0" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" filter="url(#glow)">
+<path d="M24 72 C24 52 40 47 60 47 C80 47 96 52 96 72 Z"/><rect x="54" y="36" width="12" height="8" rx="2"/><circle cx="60" cy="26" r="13"/>
+</g>
+<g fill="none" stroke="#54ffb0" stroke-linecap="round"></g>
+<g fill="#54ffb0" stroke="#54ffb0"><path d="M52 50 V64 M58 50 V60 Q58 66 62 64 M64 50 V58 Q64 68 70 62" fill="none" stroke-width="1.2" opacity="0.85"/></g>
+<path d="M88 40 q10 6 4 16 M90 34 q12 2 8 14" stroke="#54ffb0" stroke-width="1" fill="none" opacity="0.6"/><path d="M60 40 L58 47" stroke="#ff9a3c" stroke-width="1.3"/>
+</g>
+<g stroke="none"><rect x="51.5" y="57.4" width="3" height="12.6" rx="1" fill="#54ffb0" opacity="0.85"/><rect x="58.5" y="60.6" width="3" height="9.4" rx="1" fill="#54ffb0" opacity="0.85"/><rect x="65.5" y="63.8" width="3" height="6.2" rx="1" fill="#54ffb0" opacity="0.85"/></g>
+<g opacity="0.10" stroke="#000"><path d="M0 8 H120 M0 16 H120 M0 24 H120 M0 32 H120 M0 40 H120 M0 48 H120 M0 56 H120 M0 64 H120"/></g>
+</svg>

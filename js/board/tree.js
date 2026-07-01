@@ -20,8 +20,9 @@ const ORDER = {
 };
 const change = () => document.dispatchEvent(new CustomEvent('game:change'));
 
-const PORTRAIT = `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6">
-  <circle cx="24" cy="18" r="9"/><path d="M8 44c2-10 10-14 16-14s14 4 16 14"/></svg>`;
+const portraitImg = (id) =>
+  `<img class="face" src="assets/portraits/${id}.svg" alt="" draggable="false"
+     onerror="this.onerror=null;this.src='assets/portraits/placeholder.svg'"/>`;
 
 let positions = {};
 export function nodePos(id) { return positions[id]; }
@@ -86,7 +87,7 @@ function buildNode(id) {
   if (revealedChar) el.classList.add('revealed');
   if (DB.solution.rightful_line?.includes(id) && st.stage >= 2 && (locked || revealedChar)) el.classList.add('rightful');
 
-  let inner = `<div class="portrait">${PORTRAIT}</div>`;
+  let inner = `<div class="portrait">${portraitImg(id)}</div>`;
 
   if (offtree) {
     // off-tree powers: identity is revealed by the cords; show name once discovered
