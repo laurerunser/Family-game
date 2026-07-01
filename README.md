@@ -1,0 +1,108 @@
+# The Reverse of the Cloth — *Signal-Weave*
+
+A three-phase narrative-deduction game (inspired by Tresova), reskinned into a decadent
+ancient **star-empire**. A static, single-page web game: **vanilla HTML/CSS/JS, no
+framework, no build step, no backend.** Deployable as-is to GitHub Pages.
+
+You are an archivist hired by an imperial order to "restore the genealogy" of the fallen
+Loomhouse of Oramei, whose dynastic law is woven as holographic light-signals — **the
+Weave**. Reading the records, you uncover a murdered heir, a silenced mother speaking from
+the hidden reverse of her own forged records, an encrypted ledger of cords… and finally
+whose seal commissioned *you*.
+
+## The three phases
+
+1. **The Front** — read the public signal-records, learn the sealed Old Tongue by context,
+   and place every figure (name + title) on the family tree. Lock answers in anti-brute-force
+   batches. Follow the ward's strand that runs off the edge of the record.
+2. **The Reverse** — *invert the signal* to read the steganographic sub-channel hidden in the
+   tied-off strands. The silenced weaver overturns the front, restores the true heir's name,
+   and re-judges the rightful line.
+3. **The Cords** — decode the Counter's encrypted data-cords with the keys you restored in
+   Phase 2, match naels (sigils) to people, **catch the planted forgery** that frames the
+   wrong suspect, assemble the deep second key, draw the conspiracy graph — and reread the
+   very first record to see who you really work for. Then choose the medium of the truth:
+   *the medium is the meaning.*
+
+## UI
+
+- **Left** — records (reader + search over the discovered Old Tongue) and the lexicon glossary.
+- **Middle** — the holographic family tree / board. **Pan** by dragging or two-finger scroll;
+  **zoom** with the wheel, trackpad pinch, or iPad pinch (and the +/−/FIT controls).
+- **Right** — progress bar, the **Phase n/3** indicator, and a scratch-cord for your notes.
+
+Retro-futuristic / holographic CRT skin (warm orange + purple, green + blue accents).
+Portraits are placeholders awaiting final art. Progress saves to `localStorage`; **RESET**
+wipes it.
+
+## Run it
+
+```bash
+python3 -m http.server 8000   # or `npm run serve`
+# open http://localhost:8000
+```
+(Serve over HTTP — `file://` blocks `fetch()` of the JSON content.)
+
+## Project layout
+
+```
+index.html              # the shell
+css/                    # theme.css (CRT/holo skin) + layout.css (3 columns)
+js/                     # engine modules, grouped by concern (see below)
+data/*.json             # GENERATED game content (do not hand-edit)
+content/                # the reskin source: theme-bible.md, rename.js, prose.js, src-*.json
+assets/                 # og-card.png + portraits/*.svg (placeholder holographic busts)
+tools/                  # generate-content.js, verify-solvability.js, make-docs.js,
+                        #   make-portraits.js, e2e.mjs
+SOLUTION.md TRANSLATION.md DEVLOG.md CHARACTER-ART-BRIEF.md
+```
+
+Character art lives in `assets/portraits/<id>.png` — the final Signal-Weave portraits
+(one per figure, following `CHARACTER-ART-BRIEF.md`). The board shows each greyscale until
+that figure is locked/revealed, then snaps to full colour. To swap art, replace the PNGs
+(keep the `<id>.png` names). `npm run portraits` still regenerates the SVG *placeholder*
+set (kept only as a fallback via `placeholder.svg`).
+
+`js/` is organized into folders:
+
+```
+js/main.js              # boot + wiring
+js/core/    cipher.js · state.js · data.js          # cipher (shared with tools), persistence, loading
+js/text/    search.js · lexicon.js · reader.js · notes.js   # records, glossary, the two note pads
+js/board/   tree.js · viewport.js · relationships.js · edges.js · cords.js
+                                                    # the family tree, pan/zoom, Phase-2 ties,
+                                                    # Phase-3 conspiracy edges, cord workspace
+js/phases/  stages.js · transitions.js · finale.js  # gates/progress, the between-phase beats, endings
+js/hud/     timer.js · ui.js · wincard.js           # the timer, overlay helpers, victory card + sharing
+```
+
+## Content pipeline (the reskin)
+
+The puzzle is **fixed authored content** — mechanics, clue chains, cipher math, the forgery,
+and the solution are never invented. Only the *surface* is reskinned (Signal-Weave). The five
+shipped `data/*.json` are **generated** from the original puzzle (`content/src-*.json`) plus
+the rename maps (`content/rename.js`) and reskinned prose (`content/prose.js`):
+
+```bash
+npm run generate   # rebuild data/*.json from the reskin source
+npm run verify     # prove solvability (cipher round-trips, forgery, keys, reachability)
+npm run build      # generate + verify
+```
+
+`verify-solvability.js` is the make-or-break QA gate (112 checks): every lettered cord
+round-trips to its declared word under the resolved key; the forgery decodes to a real name
+under **no** key but to gibberish under the true key (and backs no culprit edge); the deep
+key (`NEMORA` ⋈ `TALIS` = `NTEAMLOIRSA`) works; every steganography grid reads; every Stage-1
+record is reachable from the start set; the solution tree, graph, and frame-reversal sigils
+are consistent. Keys are resolved from the player's Phase-2 progress at runtime, never
+hard-coded.
+
+## Testing
+
+```bash
+npm i                # installs playwright-core (dev only)
+node tools/e2e.mjs   # drives a headless browser through all three phases
+```
+
+See `content/theme-bible.md` for the full reskin map and the rationale behind keeping the
+cipher-bearing names intact.

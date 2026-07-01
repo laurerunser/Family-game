@@ -1,0 +1,62 @@
+{
+  "tree": {
+    "vethra":  { "given_name": "Vethra",  "title": "the First Warp" },
+    "orel":    { "given_name": "Orel",    "title": "the Loomfoot" },
+    "marenn":  { "given_name": "Marenn",  "title": "the Standing Warp" },
+    "suvi":    { "given_name": "Suvi",    "title": "the Quiet Shuttle" },
+    "eddan":   { "given_name": "Eddan",   "title": "the Short Thread" },
+    "talis":   { "given_name": "Talis",   "title": "the Stranger" },
+    "nemora":  { "given_name": "Nemora",  "title": "the Unwoven" },
+    "edra":    { "given_name": "Edra",    "title": "the Loomwright" },
+    "solenne": { "given_name": "Solenne", "title": "the Even Hand" },
+    "renor":   { "given_name": "Renor",   "title": "the Brackish" },
+    "hadon":   { "given_name": "Hadon",   "title": "the Plainweave" },
+    "pol":     { "given_name": "Pol",     "title": "the Quiet Hand" },
+    "wenla":   { "given_name": "Wenla",   "title": "the Reedwife" },
+    "avesa":   { "given_name": "Avesa",   "title": "the Loud Loom" },
+    "caleth":  { "given_name": "Caleth",  "title": "the Patient" },
+    "tovesh":  { "given_name": "Tovesh",  "title": "the Counter" },
+    "ilse":    { "given_name": "Ilse",    "title": "the Open Face" },
+    "dris":    { "given_name": "Dris",    "title": "the Farcomer" },
+    "factor":  { "given_name": "the Factor",  "title": "the Outside Counter" },
+    "outloom": { "given_name": "the Outloom", "title": "the Loom Beyond" }
+  },
+
+  "rightful_line": ["vethra", "suvi", "nemora"],
+  "rightful_line_note": "The front records Marenn as Vethra's eldest; the reverse (R3) proves Suvi was the true firstborn, and Nemora her trueborn, renthed daughter. Marenn's line (Edra, then Solenne) holds the warp by usurpation of the senior line. True heir = Nemora.",
+
+  "stage3_graph": [
+    { "from": "outloom", "to": "factor",  "role": "prime_mover",   "cord": "c8" },
+    { "from": "factor",  "to": "tovesh",  "role": "funder",        "cord": "c4" },
+    { "from": "tovesh",  "to": "caleth",  "role": "paymaster",     "cord": "c1,c2" },
+    { "from": "caleth",  "to": "nemora",  "role": "assassin",      "cord": "c1,c2" },
+    { "from": "factor",  "to": "solenne", "role": "installs",      "cord": "c6" },
+    { "from": "solenne", "to": "nemora",  "role": "usurper",       "cord": "c6" },
+    { "from": "ilse",    "to": "solenne", "role": "spy",           "cord": "c5" },
+    { "from": "solenne", "to": "ilse",    "role": "leverage_over", "cord": "c5" },
+    { "from": "solenne", "to": "avesa",   "role": "patsy",         "cord": "c7" },
+    { "from": "dris",    "to": "nemora",  "role": "witness_for",   "cord": "c9" }
+  ],
+
+  "forged_cord_id": "c7",
+  "forged_cord_note": "c7 frames Avesa. It is recorded in plain knot-counts (no key), so under the true key NEMORA it decodes to gibberish (N,R,S,E,J) while every true cord decodes to a Threnne word. Detecting this clears Avesa. An edge justified by c7 must be REJECTED by validation.",
+
+  "finale_answers": {
+    "true_heir":      "nemora",
+    "usurper":        "solenne",
+    "assassin":       "caleth",
+    "paymaster":      "tovesh",
+    "spy":            "ilse",
+    "prime_mover":    "outloom",
+    "witness":        "dris",
+    "patsy_cleared":  "avesa"
+  },
+
+  "cipher_keys": {
+    "stage2_truename": "NEMORA",
+    "secret_vau_name": "TALIS",
+    "assembled":       "NTEAMLOIRSA",
+    "assembled_rule":  "Interleave NEMORA and TALIS letter by letter, starting with NEMORA; append the remainder of the longer (the final A of NEMORA). N-T-E-A-M-L-O-I-R-S-A.",
+    "note": "Keys are resolved from the player's Stage-2 progress at runtime, never hard-coded into the engine. Stored here only as the answer key."
+  }
+}
