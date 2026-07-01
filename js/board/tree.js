@@ -186,22 +186,27 @@ function drawEdges() {
     for (const c of kids) seg(`M ${c.x} ${barY} L ${c.x} ${c.y - HALF_H}`, 'kin');
   }
 
-  // ---- non-blood relationships (dashed, arced below the row) -----------------------------
-  const arc = (a, b, cls, t) => {
-    if (!vis(a) || !vis(b)) return;
-    const pa = P[a], pb = P[b], mx = (pa.x + pb.x) / 2, dip = Math.max(pa.y, pb.y) + HALF_H + 44;
-    seg(`M ${pa.x} ${pa.y + HALF_H} Q ${mx} ${dip} ${pb.x} ${pb.y + HALF_H}`, cls);
-    label(mx, dip + 12, cls, t);
-  };
+  // ---- non-blood relationships: dashed, orthogonal (right-angle) connectors, NO labels ----
+  // Each relationship type gets a DISTINCT line style (colour + dash) so the player can tell
+  // them apart — but never a label: what each style means is for them to deduce.
+  const nonBlood = [];
   for (const p of DB.people) for (const e of p.edges || []) {
     if (e.hidden || e.stage > st.stage || !vis(p.id) || !vis(e.to)) continue;
-    if (e.type === 'thread_parent') arc(p.id, e.to, 'godparent', 'godparent');
-    else if (e.type === 'pattern_master') arc(p.id, e.to, 'godparent', 'tutor');
+    if (e.type === 'thread_parent') nonBlood.push([p.id, e.to, 'rel-godparent']);
+    else if (e.type === 'pattern_master') nonBlood.push([p.id, e.to, 'rel-tutor']);
   }
   for (const r of st.relations) {
-    if (r.role === 'friend') arc(r.from, r.to, 'godparent', 'sevi');
-    else if (r.role === 'lover') arc(r.from, r.to, 'godparent', 'velsa');
+    if (r.role === 'friend') nonBlood.push([r.from, r.to, 'rel-friend']);
+    else if (r.role === 'lover') nonBlood.push([r.from, r.to, 'rel-lover']);
   }
+  nonBlood.forEach(([a, b, cls], i) => {
+    const pa = P[a], pb = P[b];
+    if (!pa || !pb) return;
+    // drop from A, run along a channel below the row, rise to B — two 90° bends, staggered
+    // slightly per-link so parallel ties don't sit on top of each other.
+    const channel = Math.max(pa.y, pb.y) + HALF_H + 24 + (i % 4) * 15;
+    seg(`M ${pa.x} ${pa.y + HALF_H} L ${pa.x} ${channel} L ${pb.x} ${channel} L ${pb.x} ${pb.y + HALF_H}`, 'rel ' + cls);
+  });
 
   // ---- Phase-2 proposed ties (dashed gold) + Phase-3 conspiracy edges --------------------
   for (const e of st.relDraft) {

@@ -199,7 +199,13 @@
 /* edges */
 .edge-line { stroke: var(--line); stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
 .edge-line.kin { stroke: rgba(233,219,199,0.42); stroke-width: 2; }            /* solid = blood */
-.edge-line.godparent { stroke: var(--blue); stroke-width: 1.8; stroke-dasharray: 7 5; opacity: 0.55; } /* dashed = non-blood */
+/* non-blood ties: each type a DISTINCT dash size + colour, and never labelled — the player
+   works out what each style means. */
+.edge-line.rel { fill: none; opacity: 0.72; }
+.edge-line.rel-godparent { stroke: var(--blue);   stroke-width: 2;   stroke-dasharray: 17 8; }                     /* long dashes */
+.edge-line.rel-tutor     { stroke: var(--green);  stroke-width: 2.6; stroke-dasharray: 1 9; stroke-linecap: round; } /* round dots */
+.edge-line.rel-friend    { stroke: var(--purple); stroke-width: 2;   stroke-dasharray: 13 5 3 5; }                 /* dash-dot */
+.edge-line.rel-lover     { stroke: var(--red);    stroke-width: 2;   stroke-dasharray: 5 4; }                      /* fine dashes */
 .edge-line.covert { stroke: var(--orange); stroke-width: 2.5; }
 .edge-line.candidate { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 5 5; opacity: 0.8; }
 .rel-chip {
@@ -214,7 +220,6 @@
 }
 .rel-chip button:hover { background: var(--red); color: var(--bg0); }
 .edge-label { font-family: var(--mono); font-size: 10px; fill: var(--ink-dim); }
-.edge-label.godparent { fill: var(--blue); opacity: 0.75; }
 .edge-label.covert { fill: var(--orange-bright); }
 
 /* ---------------- right: status + notes + settings ---------------- */
