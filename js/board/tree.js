@@ -10,7 +10,7 @@ const NEW_CHARS = ['talis', 'dris']; // revealed only on the reverse; no name dr
 
 export const BOARD_W = 2400, BOARD_H = 1500;
 const W = BOARD_W, H = BOARD_H;
-const HALF_W = 75, HALF_H = 72; // node half-width / -height, for connector anchors
+const HALF_W = 75, HALF_H = 96; // node half-width / -height, for connector anchors
 
 // Hand-authored genealogical layout: spouses sit adjacent (a small gap between them so the
 // child drop can fall through it), children centred below their couple, the two dynastic
@@ -40,7 +40,7 @@ const OFFTREE = ['factor', 'outloom'];
 const change = () => document.dispatchEvent(new CustomEvent('game:change'));
 
 const portraitImg = (id) =>
-  `<img class="face" src="assets/portraits/${id}.svg" alt="" draggable="false"
+  `<img class="face" src="assets/portraits/${id}.png" alt="" draggable="false"
      onerror="this.onerror=null;this.src='assets/portraits/placeholder.svg'"/>`;
 
 let positions = {};

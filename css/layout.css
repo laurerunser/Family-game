@@ -164,20 +164,16 @@
 .node.offtree { border-color: var(--blue); }
 .node.edge-source { border-color: var(--orange); box-shadow: var(--glow-o); }
 .node .portrait {
-  height: 64px; border-radius: 6px; margin-bottom: 6px;
-  background: radial-gradient(circle at 50% 35%, rgba(79,214,255,0.30), rgba(123,63,228,0.10) 70%);
-  border: 1px solid var(--line); display: grid; place-items: center; position: relative; overflow: hidden;
-  /* unrevealed characters are greyscale; they snap to full colour once locked/revealed.
-     Works the same on the final colour art — no second B&W asset needed. */
-  filter: grayscale(1) brightness(0.78) contrast(0.95);
+  aspect-ratio: 1 / 1; border-radius: 6px; margin-bottom: 6px; overflow: hidden; position: relative;
+  /* unrevealed characters are greyscale; they snap to full colour once locked/revealed. */
+  filter: grayscale(1) brightness(0.82) contrast(0.95);
   transition: filter 0.7s ease;
 }
 .node.locked .portrait, .node.revealed .portrait { filter: none; }
-.node .portrait svg { width: 46px; height: 46px; opacity: 0.85; }
-.node .portrait .face { width: 100%; height: 100%; object-fit: cover; display: block; position: relative; z-index: 1; }
-.node .portrait::after { /* hologram sheen */
-  content: ""; position: absolute; inset: 0;
-  background: repeating-linear-gradient(0deg, rgba(79,214,255,0.05) 0, rgba(79,214,255,0.05) 1px, transparent 2px, transparent 4px);
+.node .portrait .face { width: 100%; height: 100%; object-fit: cover; display: block; }
+.node .portrait::after { /* faint hologram scanlines over the art */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(79,214,255,0.045) 0, rgba(79,214,255,0.045) 1px, transparent 2px, transparent 4px);
 }
 .node select, .node .slot-static {
   width: 100%; font-family: var(--mono); font-size: 11px; padding: 4px 5px; margin-top: 4px;
