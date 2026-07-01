@@ -36,13 +36,13 @@ export function highlightBody(text) {
   html = html.replace(termRegex, (m) => {
     const entry = DB.lexicon.find((t) => t.threnne.toLowerCase() === m.toLowerCase());
     const tid = entry ? entry.term_id : '';
-    const gloss = entry ? entry.english.replace(/"/g, '&quot;') : '';
+    const mine = trans.get(m.toLowerCase());              // the player's OWN guess (never the answer)
     const recorded = trans.has(m.toLowerCase());
     const cls = recorded ? 'term translated' : 'term untranslated';
-    let out = `<span class="${cls}" data-term="${tid}" title="${gloss}">${m}</span>`;
-    if (showTrans && recorded && trans.get(m.toLowerCase())) {
-      out += `<span class="gloss-inline">(${esc(trans.get(m.toLowerCase()))})</span>`;
-    }
+    // the tooltip only ever shows what the PLAYER wrote — the game never hands out meanings
+    const titleAttr = mine ? ` title="${esc(mine).replace(/"/g, '&quot;')}"` : '';
+    let out = `<span class="${cls}" data-term="${tid}"${titleAttr}>${m}</span>`;
+    if (showTrans && mine) out += `<span class="gloss-inline">(${esc(mine)})</span>`;
     return out;
   });
   // dim bracketed archivist notes
@@ -50,21 +50,27 @@ export function highlightBody(text) {
   return html;
 }
 
+// The Lexicon is the player's OWN glossary: the words they've discovered, each shown with
+// the translation THEY recorded (from the pad) — never the game's answer. It's a memory aid,
+// not a dictionary; you still have to deduce every meaning.
 export function renderLexicon(ul) {
   const st = S.get();
+  const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const trans = parseTranslations();
   const discovered = DB.lexicon.filter((t) => st.discovered.includes(t.term_id) && !t.affix);
-  // always show the affix key at the top once any term known
   const affixes = st.discovered.length ? DB.lexicon.filter((t) => t.affix) : [];
   ul.innerHTML = '';
   if (!discovered.length && !affixes.length) {
-    ul.innerHTML = '<li class="hint">No words yet. Open a record to learn the Old Tongue.</li>';
+    ul.innerHTML = '<li class="hint">No words yet. Open a record to meet the Old Tongue — you deduce what each word means.</li>';
     return;
   }
   const li = (t) => {
+    const mine = trans.get(t.threnne.toLowerCase());
+    const glossHtml = mine
+      ? `<span class="lx-gloss">${esc(mine)}</span>`
+      : `<span class="lx-gloss lx-untranslated">— your guess? —</span>`;
     const el = document.createElement('li');
-    el.innerHTML = `<span class="lx-term">${t.threnne}</span>` +
-      `<span class="lx-gloss">${t.english}</span>` +
-      `<span class="lx-tier">T${t.tier ?? '·'}</span>`;
+    el.innerHTML = `<span class="lx-term">${t.threnne}</span>${glossHtml}<span class="lx-tier">T${t.tier ?? '·'}</span>`;
     return el;
   };
   discovered.sort((a, b) => (a.tier - b.tier) || a.threnne.localeCompare(b.threnne)).forEach((t) => ul.appendChild(li(t)));

@@ -8,16 +8,35 @@ import { startRelDraw, isRelMode, dropDraft } from './relationships.js';
 
 const NEW_CHARS = ['talis', 'dris']; // revealed only on the reverse; no name dropdowns
 
-export const BOARD_W = 2400, BOARD_H = 1600;
+export const BOARD_W = 2400, BOARD_H = 1500;
 const W = BOARD_W, H = BOARD_H;
-const ROW_Y = { 1: 220, 2: 540, 3: 920, 4: 1240, off: 1460 };
-const ORDER = {
-  1: ['vethra', 'orel'],
-  2: ['hadon', 'marenn', 'suvi', 'talis', 'eddan'],
-  3: ['edra', 'pol', 'solenne', 'renor', 'wenla', 'nemora', 'dris', 'caleth', 'tovesh', 'ilse'],
-  4: ['avesa'],
-  off: ['factor', 'outloom'],
+const HALF_W = 75, HALF_H = 72; // node half-width / -height, for connector anchors
+
+// Hand-authored genealogical layout: spouses sit adjacent (a small gap between them so the
+// child drop can fall through it), children centred below their couple, the two dynastic
+// branches to left (Marenn's line) and centre-right (Suvi's line), the household court off to
+// the right, and the off-tree foreign powers below (Stage 3).
+const POS = {
+  // Gen 1 — the Founders
+  vethra: { x: 980, y: 170 }, orel: { x: 1180, y: 170 },
+  // Gen 2 — Vethra's children (+ their spouses)
+  marenn: { x: 560, y: 560 }, hadon: { x: 760, y: 560 },
+  eddan: { x: 1060, y: 560 },
+  suvi: { x: 1380, y: 560 }, talis: { x: 1580, y: 560 },
+  // Gen 3 — Marenn's branch
+  edra: { x: 300, y: 980 }, pol: { x: 490, y: 980 },
+  solenne: { x: 700, y: 980 },
+  renor: { x: 900, y: 980 }, wenla: { x: 1090, y: 980 },
+  // Gen 3 — Suvi's branch
+  nemora: { x: 1400, y: 980 }, dris: { x: 1590, y: 980 },
+  // Gen 3 — the Court (household, not blood)
+  caleth: { x: 1850, y: 980 }, tovesh: { x: 2040, y: 980 }, ilse: { x: 2230, y: 980 },
+  // Gen 4
+  avesa: { x: 995, y: 1360 },
+  // off-tree foreign powers (Stage 3)
+  factor: { x: 1750, y: 1360 }, outloom: { x: 2050, y: 1360 },
 };
+const OFFTREE = ['factor', 'outloom'];
 const change = () => document.dispatchEvent(new CustomEvent('game:change'));
 
 const portraitImg = (id) =>
@@ -39,31 +58,17 @@ function titleOptions() { return [...new Set(frontPlaceable().map((p) => DB.solu
 
 function visibleIds() {
   const st = S.get();
-  const ids = [];
-  for (const id of [...ORDER[1], ...ORDER[2], ...ORDER[3], ...ORDER[4]]) {
+  return Object.keys(POS).filter((id) => {
     const p = DB.byPerson[id];
-    if (p && p.stage_introduced <= st.stage) ids.push(id);
-  }
-  if (st.stage >= 3) ids.push(...ORDER.off);
-  return ids;
+    if (!p) return false;
+    if (OFFTREE.includes(id)) return st.stage >= 3;
+    return p.stage_introduced <= st.stage;
+  });
 }
 
 function layout() {
   positions = {};
-  const st = S.get();
-  const rows = { 1: [], 2: [], 3: [], 4: [], off: [] };
-  for (const id of visibleIds()) {
-    const g = ORDER.off.includes(id) ? 'off' : DB.byPerson[id].generation;
-    rows[g].push(id);
-  }
-  for (const [g, list] of Object.entries(rows)) {
-    const y = ROW_Y[g];
-    const n = list.length;
-    list.forEach((id, i) => {
-      const x = n === 1 ? W / 2 : 240 + (i * (W - 480)) / (n - 1);
-      positions[id] = { x, y };
-    });
-  }
+  for (const id of visibleIds()) positions[id] = POS[id];
 }
 
 // ---- node DOM ---------------------------------------------------------------------------
@@ -78,7 +83,7 @@ function buildNode(id) {
   el.style.left = pos.x + 'px';
   el.style.top = pos.y + 'px';
 
-  const offtree = ORDER.off.includes(id);
+  const offtree = OFFTREE.includes(id);
   const newChar = NEW_CHARS.includes(id);
   const revealedChar = newChar && S.flag('reveal:' + id);
   const locked = S.isLocked(id);
@@ -138,29 +143,75 @@ function drawEdges() {
   const svg = document.getElementById('edges-svg');
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   const st = S.get();
+  const P = positions;
+  const vis = (id) => !!P[id];
   let out = '';
-  const line = (a, b, cls, label) => {
-    const pa = positions[a], pb = positions[b];
-    if (!pa || !pb) return;
-    const mx = (pa.x + pb.x) / 2, my = (pa.y + pb.y) / 2;
-    out += `<path class="edge-line ${cls}" d="M ${pa.x} ${pa.y} L ${pb.x} ${pb.y}"/>`;
-    if (label) out += `<text class="edge-label ${cls}" x="${mx}" y="${my - 6}" text-anchor="middle">${label}</text>`;
-  };
-  // front kin edges (the visible family structure). Hidden ties are NEVER auto-shown —
-  // the player discovers and draws them in Phase 2.
-  for (const p of DB.people) {
-    if (!positions[p.id]) continue;
-    for (const e of p.edges || []) {
-      if (!positions[e.to] || e.hidden || e.stage > st.stage) continue;
-      line(p.id, e.to, 'kin', ROLE_SHORT[e.type] ?? '');
-    }
+  const seg = (d, cls) => { out += `<path class="edge-line ${cls}" d="${d}"/>`; };
+  const label = (x, y, cls, t) => { if (t) out += `<text class="edge-label ${cls}" x="${x}" y="${y}" text-anchor="middle">${t}</text>`; };
+
+  // ---- gather blood structure: couples + parent→children --------------------------------
+  // (data edges that are non-hidden + in-stage) PLUS the ties the player has locked in Phase 2.
+  const spouseOf = {}, couples = [];
+  const addCouple = (a, b) => { if (!vis(a) || !vis(b) || spouseOf[a]) return; spouseOf[a] = b; spouseOf[b] = a; couples.push([a, b]); };
+  for (const p of DB.people) for (const e of p.edges || [])
+    if (e.type === 'spouse' && !e.hidden && e.stage <= st.stage && vis(p.id) && vis(e.to)) addCouple(p.id, e.to);
+  for (const r of st.relations) if (r.role === 'spouse' && vis(r.from) && vis(r.to)) addCouple(r.from, r.to);
+
+  const unitKey = (pid) => spouseOf[pid] ? [pid, spouseOf[pid]].sort().join('+') : pid;
+  const units = {};
+  const addChild = (pid, cid) => { if (!vis(pid) || !vis(cid)) return; (units[unitKey(pid)] = units[unitKey(pid)] || new Set()).add(cid); };
+  for (const p of DB.people) for (const e of p.edges || [])
+    if (e.type === 'parent_of' && !e.hidden && e.stage <= st.stage && vis(p.id) && vis(e.to)) addChild(p.id, e.to);
+  for (const r of st.relations) if (r.role === 'true_parent_of' && vis(r.from) && vis(r.to)) addChild(r.from, r.to);
+
+  // ---- spouse bars (solid blood) --------------------------------------------------------
+  for (const [a, b] of couples) {
+    const l = P[a].x < P[b].x ? P[a] : P[b], rt = P[a].x < P[b].x ? P[b] : P[a];
+    seg(`M ${l.x + HALF_W} ${l.y} L ${rt.x - HALF_W} ${rt.y}`, 'kin');
   }
-  // Phase-2 family ties the player has LOCKED
-  for (const e of st.relations) line(e.from, e.to, 'hidden-edge', ROLE_SHORT[e.role] ?? e.role);
-  // Phase-2 proposed (not yet locked) ties — dashed candidates
-  for (const e of st.relDraft) line(e.from, e.to, 'candidate', ROLE_SHORT[e.role] || e.role);
-  // covert Stage-3 conspiracy edges drawn by the player
-  for (const e of st.edges) line(e.from, e.to, 'covert', ROLE_SHORT[e.role] ?? e.role);
+
+  // ---- parent → children drops (spouse-midpoint → sibling bar → each child) --------------
+  for (const key of Object.keys(units)) {
+    const parts = key.split('+');
+    const couple = parts.length === 2;
+    const px = couple ? (P[parts[0]].x + P[parts[1]].x) / 2 : P[parts[0]].x;
+    const py = P[parts[0]].y;
+    const kids = [...units[key]].map((c) => P[c]);
+    const startY = couple ? py : py + HALF_H;         // couples drop through the gap between them
+    const childTop = Math.min(...kids.map((c) => c.y)) - HALF_H;
+    const barY = (Math.max(startY, py + HALF_H) + childTop) / 2;
+    seg(`M ${px} ${startY} L ${px} ${barY}`, 'kin');
+    const xs = kids.map((c) => c.x);
+    if (kids.length > 1) seg(`M ${Math.min(px, ...xs)} ${barY} L ${Math.max(px, ...xs)} ${barY}`, 'kin');
+    for (const c of kids) seg(`M ${c.x} ${barY} L ${c.x} ${c.y - HALF_H}`, 'kin');
+  }
+
+  // ---- non-blood relationships (dashed, arced below the row) -----------------------------
+  const arc = (a, b, cls, t) => {
+    if (!vis(a) || !vis(b)) return;
+    const pa = P[a], pb = P[b], mx = (pa.x + pb.x) / 2, dip = Math.max(pa.y, pb.y) + HALF_H + 44;
+    seg(`M ${pa.x} ${pa.y + HALF_H} Q ${mx} ${dip} ${pb.x} ${pb.y + HALF_H}`, cls);
+    label(mx, dip + 12, cls, t);
+  };
+  for (const p of DB.people) for (const e of p.edges || []) {
+    if (e.hidden || e.stage > st.stage || !vis(p.id) || !vis(e.to)) continue;
+    if (e.type === 'thread_parent') arc(p.id, e.to, 'godparent', 'godparent');
+    else if (e.type === 'pattern_master') arc(p.id, e.to, 'godparent', 'tutor');
+  }
+  for (const r of st.relations) {
+    if (r.role === 'friend') arc(r.from, r.to, 'godparent', 'sevi');
+    else if (r.role === 'lover') arc(r.from, r.to, 'godparent', 'velsa');
+  }
+
+  // ---- Phase-2 proposed ties (dashed gold) + Phase-3 conspiracy edges --------------------
+  for (const e of st.relDraft) {
+    const pa = P[e.from], pb = P[e.to];
+    if (pa && pb) seg(`M ${pa.x} ${pa.y} L ${pb.x} ${pb.y}`, 'candidate');
+  }
+  for (const e of st.edges) {
+    const pa = P[e.from], pb = P[e.to];
+    if (pa && pb) { seg(`M ${pa.x} ${pa.y} L ${pb.x} ${pb.y}`, 'covert'); label((pa.x + pb.x) / 2, (pa.y + pb.y) / 2 - 6, 'covert', ROLE_SHORT[e.role] ?? e.role); }
+  }
   svg.innerHTML = out;
 }
 

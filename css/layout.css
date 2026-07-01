@@ -14,7 +14,14 @@
 .brand-text h1 { margin: 0; font-size: 16px; color: var(--orange-bright); text-shadow: var(--glow-o); }
 .brand-text .sub { margin: 0; font-size: 11px; color: var(--purple); letter-spacing: 0.18em; font-family: var(--mono); }
 
-.search-wrap { position: relative; flex: 1; max-width: 520px; }
+.search-wrap { position: relative; flex: 1; max-width: 440px; }
+.topcredits {
+  margin: 0 0 0 auto; max-width: 340px; text-align: right; line-height: 1.4;
+  font-family: var(--mono); font-size: 9.5px; color: var(--ink-dim); letter-spacing: 0.02em;
+}
+.topcredits a { color: var(--orange); text-decoration: none; border-bottom: 1px dotted var(--line-warm); }
+.topcredits a:hover { color: var(--orange-bright); text-shadow: var(--glow-o); }
+@media (max-width: 1200px) { .topcredits { display: none; } }
 #search-input {
   width: 100%; padding: 9px 14px;
   font-family: var(--crt); font-size: 19px; letter-spacing: 0.04em;
@@ -125,7 +132,8 @@
   padding: 7px 9px; border-bottom: 1px solid var(--line); display: flex; gap: 10px; align-items: baseline;
 }
 .lexicon-list .lx-term { color: var(--green); font-family: var(--crt); font-size: 18px; min-width: 7rem; text-shadow: var(--glow-g); }
-.lexicon-list .lx-gloss { color: var(--ink-dim); font-size: 12px; }
+.lexicon-list .lx-gloss { color: var(--orange-bright); font-size: 12px; }
+.lexicon-list .lx-untranslated { color: var(--ink-dim); font-style: italic; opacity: 0.6; }
 .lexicon-list .lx-tier { margin-left: auto; font-family: var(--mono); font-size: 9px; color: var(--purple); }
 
 /* ---------------- middle: board ---------------- */
@@ -189,9 +197,9 @@
 }
 
 /* edges */
-.edge-line { stroke: var(--line); stroke-width: 2; fill: none; }
-.edge-line.kin { stroke: rgba(176,108,255,0.55); }
-.edge-line.hidden-edge { stroke: var(--purple); stroke-dasharray: 6 4; }
+.edge-line { stroke: var(--line); stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.edge-line.kin { stroke: rgba(233,219,199,0.42); stroke-width: 2; }            /* solid = blood */
+.edge-line.godparent { stroke: var(--blue); stroke-width: 1.8; stroke-dasharray: 7 5; opacity: 0.55; } /* dashed = non-blood */
 .edge-line.covert { stroke: var(--orange); stroke-width: 2.5; }
 .edge-line.candidate { stroke: var(--gold); stroke-width: 2; stroke-dasharray: 5 5; opacity: 0.8; }
 .rel-chip {
@@ -205,9 +213,8 @@
   width: 16px; height: 16px; cursor: pointer; font-size: 10px; line-height: 1; padding: 0;
 }
 .rel-chip button:hover { background: var(--red); color: var(--bg0); }
-.edge-label {
-  font-family: var(--mono); font-size: 10px; fill: var(--ink-dim);
-}
+.edge-label { font-family: var(--mono); font-size: 10px; fill: var(--ink-dim); }
+.edge-label.godparent { fill: var(--blue); opacity: 0.75; }
 .edge-label.covert { fill: var(--orange-bright); }
 
 /* ---------------- right: status + notes + settings ---------------- */
@@ -242,7 +249,8 @@
 
 .pads { flex: 1; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
 .pad { flex: 1; display: flex; flex-direction: column; min-height: 130px; }
-.scratch-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-dim); margin-bottom: 6px; }
+.scratch-label { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; color: var(--ink-dim); margin-bottom: 6px; }
+.scratch-sub { display: block; font-size: 9px; letter-spacing: 0.02em; font-style: italic; color: var(--purple); opacity: 0.85; margin-top: 2px; text-transform: none; }
 .pad textarea {
   flex: 1; resize: vertical; min-height: 110px; width: 100%;
   font-family: var(--crt); font-size: 17px; line-height: 1.45; color: var(--orange-bright);
@@ -266,7 +274,8 @@
   padding: 8px; box-shadow: var(--glow-g); width: 210px; font-family: var(--mono);
 }
 .term-pop .tp-word { color: var(--green); font-family: var(--crt); font-size: 19px; text-shadow: var(--glow-g); }
-.term-pop .tp-gloss { color: var(--ink-dim); font-size: 11px; margin: 2px 0 8px; line-height: 1.4; }
+.term-pop .tp-gloss { color: var(--orange-bright); font-size: 11px; margin: 2px 0 8px; line-height: 1.4; }
+.term-pop .tp-none { color: var(--ink-dim); font-style: italic; opacity: 0.7; }
 .term-pop button { width: 100%; margin-top: 5px; text-align: left; }
 
 /* ---------------- overlay (transitions / finale) ---------------- */

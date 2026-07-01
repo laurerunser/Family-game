@@ -1,7 +1,7 @@
 // e2e.mjs — drive the real game in a headless browser through all three phases.
 import { chromium } from 'playwright-core';
 
-const URL = 'http://localhost:8000/index.html';
+const URL = process.env.E2E_URL || 'http://localhost:8000/index.html';
 const exe = process.env.PW_CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 let failed = 0;
 const ok = (c, m) => { console.log((c ? '  PASS ' : '  FAIL ') + m); if (!c) failed++; };
@@ -100,10 +100,11 @@ ok(await flag('frameReread'), 'frame reversal recorded');
 console.log('5. Stage 3: draw one edge via UI, then complete the graph');
 // enable draw mode, click source then target -> popover
 await page.click('#btn-lock'); // toggles draw mode in stage 3
-await page.waitForTimeout(80);
-await page.click('#nodes .node[data-id="caleth"]');
-await page.click('#nodes .node[data-id="nemora"]');
+await page.waitForTimeout(200);
+await page.locator('#nodes .node[data-id="caleth"]').click();
 await page.waitForTimeout(120);
+await page.locator('#nodes .node[data-id="nemora"]').click();
+await page.waitForTimeout(200);
 ok(await get(() => !!document.getElementById('role-pop')), 'edge role popover opened');
 await page.selectOption('#role-pop #rp-role', 'assassin');
 await page.selectOption('#role-pop #rp-cord', 'c2');

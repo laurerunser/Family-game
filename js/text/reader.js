@@ -2,7 +2,7 @@
 // reverse-channel toggle with its steganography grid.
 import { DB } from '../core/data.js';
 import * as S from '../core/state.js';
-import { highlightBody } from './lexicon.js';
+import { highlightBody, parseTranslations } from './lexicon.js';
 import { reachableUndiscovered } from './search.js';
 import { recordTranslation } from './notes.js';
 
@@ -89,13 +89,16 @@ function scheduleHidePop() { popHideTimer = setTimeout(() => { if (termPop) term
 function attachTermMenu(el) {
   const tid = el.dataset.term;
   if (!tid) return;
-  const entry = DB.byTerm[tid];
+  const word = el.textContent;
   const showPop = () => {
     clearTimeout(popHideTimer);
     const pop = ensurePop();
-    const gloss = entry ? entry.english : '';
-    pop.innerHTML = `<div class="tp-word">${el.textContent}</div>` +
-      (gloss ? `<div class="tp-gloss">${gloss.replace(/</g, '&lt;')}</div>` : '') +
+    // Deduction game: the menu NEVER shows the game's meaning — only what the player wrote
+    // (if anything). Otherwise it's just the two actions.
+    const mine = parseTranslations().get(word.toLowerCase());
+    const esc = (s) => String(s).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    pop.innerHTML = `<div class="tp-word">${esc(word)}</div>` +
+      (mine ? `<div class="tp-gloss">your note: ${esc(mine)}</div>` : `<div class="tp-gloss tp-none">not yet translated — what might it mean?</div>`) +
       `<button class="ghost-btn" data-act="search">🔍 Search records</button>` +
       `<button class="ghost-btn" data-act="record">✎ Record translation</button>`;
     const r = el.getBoundingClientRect();
@@ -108,7 +111,7 @@ function attachTermMenu(el) {
     };
     pop.querySelector('[data-act="record"]').onclick = (ev) => {
       ev.stopPropagation();
-      recordTranslation(el.textContent, gloss); pop.hidden = true;
+      recordTranslation(word); pop.hidden = true;
     };
   };
   el.addEventListener('mouseenter', showPop);
